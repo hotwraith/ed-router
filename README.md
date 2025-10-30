@@ -11,7 +11,7 @@
 
 ## Setup
 ### Python 
-Requires [Python 3.x](https://www.python.org/downloads/)
+Requires [Python 3.x](https://www.python.org/downloads/) and the [Requests library](https://requests.readthedocs.io/en/latest/)
 - Open your favourite flavour of console
 - Navigate to where you want to clone the repository
 - Run `git clone https://github.com/hotwraith/ed-router`
