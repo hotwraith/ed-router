@@ -1,6 +1,7 @@
 import json
 import math
 import requests
+import argparse
 
 
 def main() -> None:
@@ -119,18 +120,33 @@ def printPaths(paths:list):
             departure = paths[i][1]
             arrival = paths[i][2]
 
-    paths = calcLastLeg(paths)
-    exportTXT(paths)
-    with open("route.json", 'w') as f:
-        dump = {}
-        for i in range(len(paths)):
-            dump.update({i:paths[i]})
-        json.dump(dump, f, indent=4)
-        f.close()
-
-
-
+    if(isLoop):
+        paths = calcLastLeg(paths)
+    
+    if(isTxt):
+        exportTXT(paths)
+    if(isJson):
+        exportJSON(paths)
     return paths
+
+
+
+
+
+def exportJSON(paths:list) -> bool:
+    try:
+        with open("route.json", 'w') as f:
+            dump = {}
+            for i in range(len(paths)):
+                dump.update({i:paths[i]})
+            json.dump(dump, f, indent=4)
+            f.close()
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
 
 def exportTXT(paths:list) -> bool:
     try:
@@ -156,6 +172,13 @@ def calcLastLeg(paths:list) -> list:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Script that adds 3 numbers from CMD"    )
+    parser.add_argument("--loop", required=False, default=False,  action='store_true')
+    parser.add_argument("--txt", required=False, default=True,  action='store_true')
+    parser.add_argument("--json", required=False, default=False,  action='store_true')
+    args = parser.parse_args()
+    global isLoop, isTxt, isJson
+    isLoop, isTxt, isJson = args.loop, args.txt, args.json
     main()
     calc()
     sortPathBySystem()
