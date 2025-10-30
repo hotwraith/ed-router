@@ -1,0 +1,151 @@
+import json
+import math
+import requests
+
+
+def main() -> None:
+    with open('systems.txt', 'r') as f:
+        systems = f.readlines()
+        f.close()
+
+    sys_dict = {}
+
+    i=0
+    for el in systems:
+        clear = el.removesuffix('\n')
+        sys_dict.update({i:requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()})
+        i+=1
+
+
+    with open('sys_info.json', 'w') as f:
+        json.dump(sys_dict, f, indent=4)
+        f.close()
+
+def calc() -> None:
+    allPaths = {}
+    z = 0
+    dict_sys = json.load(open('sys_info.json', 'r'))
+    for i in range(len(list(dict_sys.keys()))):
+        for j in range(i+1, len(list(dict_sys.keys()))):
+            system1 = dict_sys[str(i)]
+            system2 = dict_sys[str(j)]
+            distance = math.sqrt(math.pow(system1["coords"]["x"]-system2["coords"]["x"],2) + math.pow(system1["coords"]["y"]-system2["coords"]["y"],2) + math.pow(system1["coords"]["z"]-system2["coords"]["z"], 2))
+            #print(f"Distance between {system1["name"]} and {system2["name"]}: {round(distance, 2)}lys")
+            if(distance > 0):
+                allPaths.update({z: {"systems": {0: system1["name"], 1:system2["name"]}, "distance":distance}})
+                z += 1
+
+    with open("all_paths.json", 'w') as f:
+        json.dump(allPaths, f, indent=4)
+        f.close()
+
+def sortPathBySystem() -> None:
+    allPaths = json.load(open('all_paths.json', 'r'))
+    dict_sys = json.load(open('sys_info.json', 'r'))
+    paths_per_system = {}
+    for system in list(dict_sys.keys()):
+        i=0
+        paths_per_system.update({dict_sys[system]["name"]:{}})
+        for path in list(allPaths.keys()):
+            if((dict_sys[system]["name"] in allPaths[path]["systems"]["0"]) or (dict_sys[system]["name"] in allPaths[path]["systems"]["1"])): 
+                paths_per_system[dict_sys[system]["name"]].update({i:allPaths[path]})
+                i += 1
+    json.dump(paths_per_system, open('min_paths.json', 'w') ,indent=4)
+                    
+                
+def sortPathsByDistance() -> dict:
+    systems_path = json.load(open('min_paths.json', 'r'))
+    newDict = {}
+    for system in list(systems_path.keys()):
+        distance = []
+        for path in list(systems_path[system].keys()):
+            distance.append([systems_path[system][path]["distance"], systems_path[system][path]["systems"]["0"] , systems_path[system][path]["systems"]["1"]])
+        distance.sort()
+        newDict.update({system:distance})
+    return newDict
+
+def greedy(newDict:dict) -> list:
+    paths = []
+    departure = list(newDict.keys())[0]
+    for i in range(len(list(newDict.keys()))):
+        try:
+            path = newDict[departure][0]
+            paths.append(path)
+            newDict = deleter(departure, newDict)
+            if(departure == path[1]):
+                departure = path[2]
+            elif(departure == path[2]):
+                departure = path[1]
+        except IndexError:
+            pass
+    return paths
+        
+
+def deleter(system:str, diction:dict)-> dict:
+    toRemove = []
+    for sys in list(diction.keys()):
+        for path in diction[sys]:
+            if(system in path):
+                toRemove.append(path)
+
+    for el in toRemove:
+        for sys in list(diction.keys()):
+            try:
+                diction[sys].remove(el)
+            except ValueError:
+                pass
+    return diction
+        
+def findPathByDistance(distances:list[float]) -> list[dict]:
+    all_paths = json.load(open('all_paths.json', 'r'))
+    paths = []
+    for dist in distances:
+        for path in list(all_paths.keys()):
+            if(all_paths[path]["distance"] == dist):
+                paths.append(all_paths[path])
+    return paths
+
+def printPaths(paths:list):
+    departure = paths[0][1]
+    arrival = paths[0][2]
+    for i in range(1, len(paths)):
+        if(paths[i][1] == arrival):
+            departure = paths[i][1]
+            arrival = paths[i][2]
+        elif(paths[i][2] == arrival):
+            temp = paths[i][1]
+            paths[i][1] = arrival
+            paths[i][2] = temp
+            departure = paths[i][1]
+            arrival = paths[i][2]
+
+    paths = calcLastLeg(paths)
+
+    with open("route.json", 'w') as f:
+        dump = {}
+        for i in range(len(paths)):
+            dump.update({i:paths[i]})
+        json.dump(dump, f, indent=4)
+        f.close()
+
+    return paths
+
+def calcLastLeg(paths:list) -> list:
+    departure = requests.get('https://www.edsm.net/api-v1/system', params={"systemName":paths[-1][2], "showCoordinates":1}).json()
+    arrival = requests.get('https://www.edsm.net/api-v1/system', params={"systemName":paths[0][1], "showCoordinates":1}).json()
+    distance = math.sqrt(math.pow(departure["coords"]["x"]-arrival["coords"]["x"],2) + 
+                         math.pow(departure["coords"]["y"]-arrival["coords"]["y"],2) + 
+                         math.pow(departure["coords"]["z"]-arrival["coords"]["z"], 2))
+    paths.append([distance, departure["name"], arrival["name"]])
+    return paths
+
+
+if __name__ == '__main__':
+    main()
+    calc()
+    sortPathBySystem()
+    newDict = sortPathsByDistance()
+    tentative = greedy(newDict)
+    tentative = printPaths(tentative)
+    for el in tentative:
+        print(f"{el[1]} to {el[2]} ({round(el[0], 1)}lys)")

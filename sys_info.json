@@ -1,0 +1,92 @@
+{
+    "0": {
+        "name": "Terminus",
+        "coords": {
+            "x": 81.71875,
+            "y": -6.96875,
+            "z": 25.90625
+        },
+        "coordsLocked": true
+    },
+    "1": {
+        "name": "Drojia XK-D c26-0",
+        "coords": {
+            "x": 2137.6875,
+            "y": -1131.34375,
+            "z": 3904.78125
+        },
+        "coordsLocked": true
+    },
+    "2": {
+        "name": "Drojaea DG-E d12-4",
+        "coords": {
+            "x": 1172.5,
+            "y": -779.3125,
+            "z": 3856.4375
+        },
+        "coordsLocked": true
+    },
+    "3": {
+        "name": "Thaileia PJ-O d7-74",
+        "coords": {
+            "x": 718.0625,
+            "y": -198,
+            "z": 4705.53125
+        },
+        "coordsLocked": true
+    },
+    "4": {
+        "name": "Qeajo CZ-N c20-15",
+        "coords": {
+            "x": 5064.15625,
+            "y": 149.625,
+            "z": 7503.53125
+        },
+        "coordsLocked": true
+    },
+    "5": {
+        "name": "Bleia Hype IC-T c4-0",
+        "coords": {
+            "x": 9220.625,
+            "y": -900.28125,
+            "z": 11940.875
+        },
+        "coordsLocked": true
+    },
+    "6": {
+        "name": "Cryaa Ain ZJ-R e4-4",
+        "coords": {
+            "x": 1101.84375,
+            "y": 2824,
+            "z": 15153.75
+        },
+        "coordsLocked": true
+    },
+    "7": {
+        "name": "Eeshorks BA-A g2179",
+        "coords": {
+            "x": 1980.65625,
+            "y": -952.75,
+            "z": 17323.96875
+        },
+        "coordsLocked": true
+    },
+    "8": {
+        "name": "Oephaich HC-C d1",
+        "coords": {
+            "x": -2306.90625,
+            "y": 923.0625,
+            "z": 16892.125
+        },
+        "coordsLocked": true
+    },
+    "9": {
+        "name": "Eagle Sector EL-Y d203",
+        "coords": {
+            "x": -2036.8125,
+            "y": 99.65625,
+            "z": 6687.0625
+        },
+        "coordsLocked": true
+    }
+}
