@@ -1,3 +1,4 @@
+import os
 import json
 import math
 import requests
@@ -5,6 +6,8 @@ import argparse
 
 
 def main() -> None:
+    if 'temp' not in os.listdir():
+        os.mkdir('temp')
     with open('systems.txt', 'r') as f:
         systems = f.readlines()
         f.close()
@@ -18,14 +21,14 @@ def main() -> None:
         i+=1
 
 
-    with open('sys_info.json', 'w') as f:
+    with open('temp/sys_info.json', 'w') as f:
         json.dump(sys_dict, f, indent=4)
         f.close()
 
 def calc() -> None:
     allPaths = {}
     z = 0
-    dict_sys = json.load(open('sys_info.json', 'r'))
+    dict_sys = json.load(open('temp/sys_info.json', 'r'))
     for i in range(len(list(dict_sys.keys()))):
         for j in range(i+1, len(list(dict_sys.keys()))):
             system1 = dict_sys[str(i)]
@@ -36,13 +39,13 @@ def calc() -> None:
                 allPaths.update({z: {"systems": {0: system1["name"], 1:system2["name"]}, "distance":distance}})
                 z += 1
 
-    with open("all_paths.json", 'w') as f:
+    with open("temp/all_paths.json", 'w') as f:
         json.dump(allPaths, f, indent=4)
         f.close()
 
 def sortPathBySystem() -> None:
-    allPaths = json.load(open('all_paths.json', 'r'))
-    dict_sys = json.load(open('sys_info.json', 'r'))
+    allPaths = json.load(open('temp/all_paths.json', 'r'))
+    dict_sys = json.load(open('temp/sys_info.json', 'r'))
     paths_per_system = {}
     for system in list(dict_sys.keys()):
         i=0
@@ -51,11 +54,11 @@ def sortPathBySystem() -> None:
             if((dict_sys[system]["name"] in allPaths[path]["systems"]["0"]) or (dict_sys[system]["name"] in allPaths[path]["systems"]["1"])): 
                 paths_per_system[dict_sys[system]["name"]].update({i:allPaths[path]})
                 i += 1
-    json.dump(paths_per_system, open('min_paths.json', 'w') ,indent=4)
+    json.dump(paths_per_system, open('temp/min_paths.json', 'w') ,indent=4)
                     
                 
 def sortPathsByDistance() -> dict:
-    systems_path = json.load(open('min_paths.json', 'r'))
+    systems_path = json.load(open('temp/min_paths.json', 'r'))
     newDict = {}
     for system in list(systems_path.keys()):
         distance = []
@@ -98,7 +101,7 @@ def deleter(system:str, diction:dict)-> dict:
     return diction
         
 def findPathByDistance(distances:list[float]) -> list[dict]:
-    all_paths = json.load(open('all_paths.json', 'r'))
+    all_paths = json.load(open('temp/all_paths.json', 'r'))
     paths = []
     for dist in distances:
         for path in list(all_paths.keys()):
