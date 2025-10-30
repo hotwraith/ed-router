@@ -79,14 +79,5 @@
             "z": 16892.125
         },
         "coordsLocked": true
-    },
-    "9": {
-        "name": "Eagle Sector EL-Y d203",
-        "coords": {
-            "x": -2036.8125,
-            "y": 99.65625,
-            "z": 6687.0625
-        },
-        "coordsLocked": true
     }
 }

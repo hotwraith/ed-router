@@ -120,7 +120,7 @@ def printPaths(paths:list):
             arrival = paths[i][2]
 
     paths = calcLastLeg(paths)
-
+    exportTXT(paths)
     with open("route.json", 'w') as f:
         dump = {}
         for i in range(len(paths)):
@@ -128,7 +128,22 @@ def printPaths(paths:list):
         json.dump(dump, f, indent=4)
         f.close()
 
+
+
     return paths
+
+def exportTXT(paths:list) -> bool:
+    try:
+        with open("route.txt", 'w') as f:
+            for jump in paths:
+                f.write(f"{jump[1]} -> {jump[2]} ({round(jump[0])} lys)\n")
+            f.close()
+
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
 
 def calcLastLeg(paths:list) -> list:
     departure = requests.get('https://www.edsm.net/api-v1/system', params={"systemName":paths[-1][2], "showCoordinates":1}).json()

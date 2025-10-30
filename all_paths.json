@@ -57,261 +57,198 @@
     },
     "8": {
         "systems": {
-            "0": "Terminus",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 6990.74718000627
-    },
-    "9": {
-        "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Drojaea DG-E d12-4"
         },
         "distance": 1028.51836604743
     },
-    "10": {
+    "9": {
         "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Thaileia PJ-O d7-74"
         },
         "distance": 1878.2082575659874
     },
-    "11": {
+    "10": {
         "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Qeajo CZ-N c20-15"
         },
         "distance": 4812.07874475295
     },
-    "12": {
+    "11": {
         "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Bleia Hype IC-T c4-0"
         },
         "distance": 10714.485347724432
     },
-    "13": {
+    "12": {
         "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Cryaa Ain ZJ-R e4-4"
         },
         "distance": 11969.002230493346
     },
-    "14": {
+    "13": {
         "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Eeshorks BA-A g2179"
         },
         "distance": 13421.294561299661
     },
-    "15": {
+    "14": {
         "systems": {
             "0": "Drojia XK-D c26-0",
             "1": "Oephaich HC-C d1"
         },
         "distance": 13879.700872974252
     },
-    "16": {
-        "systems": {
-            "0": "Drojia XK-D c26-0",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 5165.549361307233
-    },
-    "17": {
+    "15": {
         "systems": {
             "0": "Drojaea DG-E d12-4",
             "1": "Thaileia PJ-O d7-74"
         },
         "distance": 1124.8990445153568
     },
-    "18": {
+    "16": {
         "systems": {
             "0": "Drojaea DG-E d12-4",
             "1": "Qeajo CZ-N c20-15"
         },
         "distance": 5413.797749118393
     },
-    "19": {
+    "17": {
         "systems": {
             "0": "Drojaea DG-E d12-4",
             "1": "Bleia Hype IC-T c4-0"
         },
         "distance": 11408.114618354244
     },
-    "20": {
+    "18": {
         "systems": {
             "0": "Drojaea DG-E d12-4",
             "1": "Cryaa Ain ZJ-R e4-4"
         },
         "distance": 11858.251262347942
     },
-    "21": {
+    "19": {
         "systems": {
             "0": "Drojaea DG-E d12-4",
             "1": "Eeshorks BA-A g2179"
         },
         "distance": 13492.872009344299
     },
-    "22": {
+    "20": {
         "systems": {
             "0": "Drojaea DG-E d12-4",
             "1": "Oephaich HC-C d1"
         },
         "distance": 13599.025593432065
     },
-    "23": {
-        "systems": {
-            "0": "Drojaea DG-E d12-4",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 4368.605117970474
-    },
-    "24": {
+    "21": {
         "systems": {
             "0": "Thaileia PJ-O d7-74",
             "1": "Qeajo CZ-N c20-15"
         },
         "distance": 5180.557694342769
     },
-    "25": {
+    "22": {
         "systems": {
             "0": "Thaileia PJ-O d7-74",
             "1": "Bleia Hype IC-T c4-0"
         },
         "distance": 11186.463569921098
     },
-    "26": {
+    "23": {
         "systems": {
             "0": "Thaileia PJ-O d7-74",
             "1": "Cryaa Ain ZJ-R e4-4"
         },
         "distance": 10883.246165354487
     },
-    "27": {
+    "24": {
         "systems": {
             "0": "Thaileia PJ-O d7-74",
             "1": "Eeshorks BA-A g2179"
         },
         "distance": 12703.887416119733
     },
-    "28": {
+    "25": {
         "systems": {
             "0": "Thaileia PJ-O d7-74",
             "1": "Oephaich HC-C d1"
         },
         "distance": 12606.358883314479
     },
-    "29": {
-        "systems": {
-            "0": "Thaileia PJ-O d7-74",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 3406.5233895447755
-    },
-    "30": {
+    "26": {
         "systems": {
             "0": "Qeajo CZ-N c20-15",
             "1": "Bleia Hype IC-T c4-0"
         },
         "distance": 6169.972054975588
     },
-    "31": {
+    "27": {
         "systems": {
             "0": "Qeajo CZ-N c20-15",
             "1": "Cryaa Ain ZJ-R e4-4"
         },
         "distance": 9020.978267966995
     },
-    "32": {
+    "28": {
         "systems": {
             "0": "Qeajo CZ-N c20-15",
             "1": "Eeshorks BA-A g2179"
         },
         "distance": 10352.014083357462
     },
-    "33": {
+    "29": {
         "systems": {
             "0": "Qeajo CZ-N c20-15",
             "1": "Oephaich HC-C d1"
         },
         "distance": 11961.457291979585
     },
-    "34": {
-        "systems": {
-            "0": "Qeajo CZ-N c20-15",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 7147.928041340349
-    },
-    "35": {
+    "30": {
         "systems": {
             "0": "Bleia Hype IC-T c4-0",
             "1": "Cryaa Ain ZJ-R e4-4"
         },
         "distance": 9492.494170663373
     },
-    "36": {
+    "31": {
         "systems": {
             "0": "Bleia Hype IC-T c4-0",
             "1": "Eeshorks BA-A g2179"
         },
         "distance": 9022.061781654578
     },
-    "37": {
+    "32": {
         "systems": {
             "0": "Bleia Hype IC-T c4-0",
             "1": "Oephaich HC-C d1"
         },
         "distance": 12677.674696603104
     },
-    "38": {
-        "systems": {
-            "0": "Bleia Hype IC-T c4-0",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 12463.238738605176
-    },
-    "39": {
+    "33": {
         "systems": {
             "0": "Cryaa Ain ZJ-R e4-4",
             "1": "Eeshorks BA-A g2179"
         },
         "distance": 4443.64730773132
     },
-    "40": {
+    "34": {
         "systems": {
             "0": "Cryaa Ain ZJ-R e4-4",
             "1": "Oephaich HC-C d1"
         },
         "distance": 4272.597287602852
     },
-    "41": {
-        "systems": {
-            "0": "Cryaa Ain ZJ-R e4-4",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 9431.755358706267
-    },
-    "42": {
+    "35": {
         "systems": {
             "0": "Eeshorks BA-A g2179",
             "1": "Oephaich HC-C d1"
         },
         "distance": 4699.824863862116
-    },
-    "43": {
-        "systems": {
-            "0": "Eeshorks BA-A g2179",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 11418.904879346122
-    },
-    "44": {
-        "systems": {
-            "0": "Oephaich HC-C d1",
-            "1": "Eagle Sector EL-Y d203"
-        },
-        "distance": 10241.789351242993
     }
 }
