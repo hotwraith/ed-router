@@ -122,7 +122,8 @@ def printPaths(paths:list):
 
     if(isLoop):
         paths = calcLastLeg(paths)
-    
+    if(isSpansh):
+        exportSpansh(paths)
     if(isTxt):
         exportTXT(paths)
     if(isJson):
@@ -146,7 +147,17 @@ def exportJSON(paths:list) -> bool:
         print(e)
         return False
 
+def exportSpansh(paths:list) -> bool:
+    try:
+        with open("spansh_route.txt", 'w') as f:
+            for jump in paths:
+                f.write(f"{jump[2]}\n")
+            f.close()
 
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 def exportTXT(paths:list) -> bool:
     try:
@@ -176,9 +187,10 @@ if __name__ == '__main__':
     parser.add_argument("--loop", required=False, default=False,  action='store_true')
     parser.add_argument("--txt", required=False, default=True,  action='store_true')
     parser.add_argument("--json", required=False, default=False,  action='store_true')
+    parser.add_argument("--spansh", required=False, default=False,  action='store_true')
     args = parser.parse_args()
-    global isLoop, isTxt, isJson
-    isLoop, isTxt, isJson = args.loop, args.txt, args.json
+    global isLoop, isTxt, isJson, isSpansh
+    isLoop, isTxt, isJson, isSpansh = args.loop, args.txt, args.json, args.spansh
     main()
     calc()
     sortPathBySystem()
