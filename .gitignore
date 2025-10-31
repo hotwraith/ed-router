@@ -214,6 +214,7 @@ __marimo__/
 #outputs
 *.json
 *.txt
+*.zip
 
 #localtests
 launch.bat
