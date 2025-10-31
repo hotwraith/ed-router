@@ -35,7 +35,7 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
 
 - Edit `systems.txt` to add the systems you want in your route
     - The first system will be your departure, be careful of which one you put first
-    - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems.txt) file contains an example route
+    - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems_example.txt) file contains an example route
 - Open your favourite flavour of console
 - run `python path/to/router.py`
     - add `--loop` to: make the route loop back to your starting system
@@ -47,6 +47,6 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
 
 - Edit `systems.txt` to add the systems you want in your route
     - The first system will be your departure, be careful of which one you put first
-    - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems.txt) file contains an example route
+    - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems_example.txt) file contains an example route
 - Double click `router.exe`
 - Output will be in `route.txt`
