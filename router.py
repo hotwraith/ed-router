@@ -3,6 +3,7 @@ import json
 import math
 import requests
 import argparse
+from itertools import permutations
 
 
 def main() -> None:
@@ -24,6 +25,9 @@ def main() -> None:
     with open('temp/sys_info.json', 'w') as f:
         json.dump(sys_dict, f, indent=4)
         f.close()
+
+    if(isMin):
+        otherCalc(systems)
 
 def calc() -> None:
     allPaths = {}
@@ -83,7 +87,6 @@ def greedy(newDict:dict) -> list:
         except IndexError:
             pass
     return paths
-        
 
 def deleter(system:str, diction:dict)-> dict:
     toRemove = []
@@ -134,7 +137,63 @@ def printPaths(paths:list):
     return paths
 
 
+def otherCalc(systems):
+    for i in range(len(systems)):
+        systems[i] = systems[i].removesuffix('\n')
 
+    departure = systems[0]
+    shittan = searchForAllPaths(departure, systems)
+    fullRoutes = {}
+    i = 0
+    for i in range(len(shittan)):
+        shittan[i] = list(shittan[i])
+        shittan[i].append(departure)
+        shittan[i].insert(0, departure)
+    
+    for route in shittan:
+        for i in range(len(route)-1):
+            route[i] = calc_between_sys(route[i], route[i+1])
+        route.pop(-1)
+    
+    totalDistances = calcFullDistance(shittan)
+    index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
+    print(round(totalDistances[index_min]))
+    print(shittan[index_min])
+    with open('minimal_route.txt', 'w') as f:
+        for i in range(len(shittan[index_min])):
+            f.write(f'{shittan[index_min][i][1]}\n')
+        f.close()
+
+
+def calcFullDistance(shittan):
+    totalDistances = []
+    for route in shittan:
+        distance = 0
+        for leg in route:
+            distance += leg[2]
+        totalDistances.append(distance)
+    return totalDistances
+
+
+def calc_between_sys(sys1, sys2):
+    dict_sys = json.load(open('temp/sys_info.json', 'r'))
+    for i in range(len(list(dict_sys.keys()))):
+        if(dict_sys[str(i)]["name"] == sys1):
+            system1 = dict_sys[str(i)]
+        if(dict_sys[str(i)]["name"] == sys2):
+            system2 = dict_sys[str(i)]
+
+
+    distance = math.sqrt(math.pow(system1["coords"]["x"]-system2["coords"]["x"],2) + math.pow(system1["coords"]["y"]-system2["coords"]["y"],2) + math.pow(system1["coords"]["z"]-system2["coords"]["z"], 2))
+    #print(f"Distance between {system1["name"]} and {system2["name"]}: {round(distance, 2)}lys")
+    if(distance > 0):
+        return (sys1, sys2, distance)
+    return None
+
+
+def searchForAllPaths(departure, systems:list) -> list[tuple]:
+    systems.remove(departure)
+    return list(permutations(systems))
 
 
 def exportJSON(paths:list) -> bool:
@@ -191,14 +250,16 @@ if __name__ == '__main__':
     parser.add_argument("--txt", required=False, default=True,  action='store_true')
     parser.add_argument("--json", required=False, default=False,  action='store_true')
     parser.add_argument("--spansh", required=False, default=False,  action='store_true')
+    parser.add_argument("--min", required=False, default=False,  action='store_true')
     args = parser.parse_args()
-    global isLoop, isTxt, isJson, isSpansh
-    isLoop, isTxt, isJson, isSpansh = args.loop, args.txt, args.json, args.spansh
+    global isLoop, isTxt, isJson, isSpansh, isMin
+    isLoop, isTxt, isJson, isSpansh, isMin = args.loop, args.txt, args.json, args.spansh, args.min
     main()
-    calc()
-    sortPathBySystem()
-    newDict = sortPathsByDistance()
-    tentative = greedy(newDict)
-    tentative = printPaths(tentative)
-    for el in tentative:
-        print(f"{el[1]} to {el[2]} ({round(el[0], 1)}lys)")
+    if(not isMin):
+        calc()
+        sortPathBySystem()
+        newDict = sortPathsByDistance()
+        tentative = greedy(newDict)
+        tentative = printPaths(tentative)
+        for el in tentative:
+            print(f"{el[1]} to {el[2]} ({round(el[0], 1)}lys)")
