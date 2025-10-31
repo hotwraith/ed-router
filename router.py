@@ -142,32 +142,32 @@ def otherCalc(systems):
         systems[i] = systems[i].removesuffix('\n')
 
     departure = systems[0]
-    shittan = searchForAllPaths(departure, systems)
+    allPaths = searchForAllPaths(departure, systems)
     fullRoutes = {}
     i = 0
-    for i in range(len(shittan)):
-        shittan[i] = list(shittan[i])
-        shittan[i].append(departure)
-        shittan[i].insert(0, departure)
+    for i in range(len(allPaths)):
+        allPaths[i] = list(allPaths[i])
+        allPaths[i].append(departure)
+        allPaths[i].insert(0, departure)
     
-    for route in shittan:
+    for route in allPaths:
         for i in range(len(route)-1):
             route[i] = calc_between_sys(route[i], route[i+1])
         route.pop(-1)
     
-    totalDistances = calcFullDistance(shittan)
+    totalDistances = calcFullDistance(allPaths)
     index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
     print(round(totalDistances[index_min]))
-    print(shittan[index_min])
+    print(allPaths[index_min])
     with open('minimal_route.txt', 'w') as f:
-        for i in range(len(shittan[index_min])):
-            f.write(f'{shittan[index_min][i][1]}\n')
+        for i in range(len(allPaths[index_min])):
+            f.write(f'{allPaths[index_min][i][1]}\n')
         f.close()
 
 
-def calcFullDistance(shittan):
+def calcFullDistance(allPaths):
     totalDistances = []
-    for route in shittan:
+    for route in allPaths:
         distance = 0
         for leg in route:
             distance += leg[2]
