@@ -38,10 +38,12 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
     - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems_example.txt) file contains an example route
 - Open your favourite flavour of console
 - run `python path/to/router.py`
-    - add `--loop` to: make the route loop back to your starting system
-    - add `--json` to: output a `route.json` file with the jumps
-    - add `--spansh` to: output a `spansh_route.txt` file uploadable to [Spansh](https://spansh.co.uk/)
-    - add `--txt` to: turn off the `route.txt` output
+    - add `--loop`, `-l` to: make the route loop back to your starting system
+    - add `--json`, `-j` to: output a `route.json` file with the jumps
+    - add `--spansh`, `-s` to: output a `spansh_route.txt` file uploadable to [Spansh](https://spansh.co.uk/)
+    - add `--txt`, `-t` to: turn off the `route.txt` output
+    - add `--greedy`, `-g` to: use a greedy algorithm when searching for routes
+    - add `-h`, `--help` to: display the help message about args
 
 ### .exe
 

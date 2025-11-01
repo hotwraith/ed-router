@@ -283,11 +283,11 @@ def printConsole(tentative:list) -> None:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Script that calculates optimal route between multiple Elite: Dangerous star systems")
-    parser.add_argument("--loop", required=False, default=False,  action='store_true', help="This argument makes the route end in your starting system")
-    parser.add_argument("--txt", required=False, default=True,  action='store_true', help="Disables route.txt output")
-    parser.add_argument("--json", required=False, default=False,  action='store_true', help="Enables route.json output")
-    parser.add_argument("--spansh", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
-    parser.add_argument("--greedy", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
+    parser.add_argument("--loop", "-l", required=False, default=False,  action='store_true', help="This argument makes the route end in your starting system")
+    parser.add_argument("--txt", "-t", required=False, default=True,  action='store_false', help="Disables route.txt output")
+    parser.add_argument("--json", "-j", required=False, default=False,  action='store_true', help="Enables route.json output")
+    parser.add_argument("--spansh", "-s", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
+    parser.add_argument("--greedy", "-g", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
     args = parser.parse_args()
     global isLoop, isTxt, isJson, isSpansh, isGreedy
     isLoop, isTxt, isJson, isSpansh, isGreedy = args.loop, args.txt, args.json, args.spansh, args.greedy
