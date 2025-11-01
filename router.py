@@ -1,12 +1,14 @@
 import os
 import json
 import math
+import time
+import datetime
 import requests
 import argparse
 from itertools import permutations
 
 
-def main() -> None:
+def main() -> list[str]:
     if 'temp' not in os.listdir():
         os.mkdir('temp')
     with open('systems.txt', 'r') as f:
@@ -26,8 +28,8 @@ def main() -> None:
         json.dump(sys_dict, f, indent=4)
         f.close()
 
-    if(isMin):
-        otherCalc(systems)
+    
+    return systems
 
 def calc() -> None:
     allPaths = {}
@@ -142,27 +144,52 @@ def otherCalc(systems):
         systems[i] = systems[i].removesuffix('\n')
 
     departure = systems[0]
+
+    start = time.time()
     allPaths = searchForAllPaths(departure, systems)
-    fullRoutes = {}
+    print(f"Search for all path executed in: {round(time.time()-start, 1)}s")
     i = 0
-    for i in range(len(allPaths)):
-        allPaths[i] = list(allPaths[i])
-        allPaths[i].append(departure)
-        allPaths[i].insert(0, departure)
+    start = time.time()
+    allPaths = addDeparture(allPaths, departure)
+    print(f"Change tuple to list and add departure executed in: {round(time.time()-start, 1)}s")
     
+    start = time.time()
+    calc()
+    dict_sys = json.load(open('temp/all_paths.json', 'r'))
     for route in allPaths:
         for i in range(len(route)-1):
-            route[i] = calc_between_sys(route[i], route[i+1])
+            route[i] = calc_between_sys(route[i], route[i+1], dict_sys)
         route.pop(-1)
+    print(f"Calculate distances for all legs of routes executed in: {round(time.time()-start, 1)}s")
     
+    start = time.time()
     totalDistances = calcFullDistance(allPaths)
+    print(f"Calculate total route distance executed in: {round(time.time()-start, 1)}s")
+    start = time.time()
     index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
-    print(round(totalDistances[index_min]))
-    print(allPaths[index_min])
-    with open('minimal_route.txt', 'w') as f:
-        for i in range(len(allPaths[index_min])):
-            f.write(f'{allPaths[index_min][i][1]}\n')
-        f.close()
+    print(f"Find minimal route executed in: {round(time.time()-start, 1)}s")
+    #print(round(totalDistances[index_min]))
+    #print(allPaths[index_min])
+
+    if(isSpansh):
+        exportSpansh(list(allPaths[index_min]))
+    if(isTxt):
+        exportTXT(list(allPaths[index_min]))
+    if(isJson):
+        exportJSON(list(allPaths[index_min]))
+    return allPaths[index_min]
+    #with open('spansh_minimal_route.txt', 'w') as f:
+    #    for i in range(len(allPaths[index_min])):
+    #        f.write(f'{allPaths[index_min][i][1]}\n')
+    #    f.close()
+
+def addDeparture(allPaths:list[tuple], departure:str) -> list[list]:
+    for i in range(len(allPaths)):
+        allPaths[i] = list(allPaths[i])
+        if(isLoop):
+            allPaths[i].append(departure)
+        allPaths[i].insert(0, departure)
+    return allPaths #type:ignore
 
 
 def calcFullDistance(allPaths):
@@ -170,24 +197,30 @@ def calcFullDistance(allPaths):
     for route in allPaths:
         distance = 0
         for leg in route:
-            distance += leg[2]
+            distance += leg[0]
         totalDistances.append(distance)
     return totalDistances
 
 
-def calc_between_sys(sys1, sys2):
-    dict_sys = json.load(open('temp/sys_info.json', 'r'))
-    for i in range(len(list(dict_sys.keys()))):
-        if(dict_sys[str(i)]["name"] == sys1):
-            system1 = dict_sys[str(i)]
-        if(dict_sys[str(i)]["name"] == sys2):
-            system2 = dict_sys[str(i)]
+def calc_between_sys(sys1, sys2, dict_sys):
+    searchSys1, searchSys2 = False, False
+    i = -1
+    while not (searchSys1 and searchSys2):
+        i+=1
+        searchSys1, searchSys2 = False, False
+        if(dict_sys[str(i)]["systems"]["0"] == sys1):
+            searchSys1 = True
+        elif(dict_sys[str(i)]["systems"]["0"] == sys2):
+            searchSys2 = True
+        if(dict_sys[str(i)]["systems"]["1"] == sys1):
+            searchSys1 = True
+        elif(dict_sys[str(i)]["systems"]["1"] == sys2):
+            searchSys2 = True
 
-
-    distance = math.sqrt(math.pow(system1["coords"]["x"]-system2["coords"]["x"],2) + math.pow(system1["coords"]["y"]-system2["coords"]["y"],2) + math.pow(system1["coords"]["z"]-system2["coords"]["z"], 2))
-    #print(f"Distance between {system1["name"]} and {system2["name"]}: {round(distance, 2)}lys")
+    distance = dict_sys[str(i)]["distance"]
+    
     if(distance > 0):
-        return (sys1, sys2, distance)
+        return (distance, sys1, sys2)
     return None
 
 
@@ -243,23 +276,37 @@ def calcLastLeg(paths:list) -> list:
     paths.append([distance, departure["name"], arrival["name"]])
     return paths
 
+def printConsole(tentative:list) -> None:
+    for el in tentative:
+        print(f"{el[1]} to {el[2]} ({round(el[0], 1)}lys)")
+    print(f"\033[1mTotal distance: {round(calcFullDistance([tentative])[0], 2)} lys\033[0m")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Script that adds 3 numbers from CMD"    )
-    parser.add_argument("--loop", required=False, default=False,  action='store_true')
-    parser.add_argument("--txt", required=False, default=True,  action='store_true')
-    parser.add_argument("--json", required=False, default=False,  action='store_true')
-    parser.add_argument("--spansh", required=False, default=False,  action='store_true')
-    parser.add_argument("--min", required=False, default=False,  action='store_true')
+    parser = argparse.ArgumentParser(description="Script that calculates optimal route between multiple Elite: Dangerous star systems")
+    parser.add_argument("--loop", required=False, default=False,  action='store_true', help="This argument makes the route end in your starting system")
+    parser.add_argument("--txt", required=False, default=True,  action='store_true', help="Disables route.txt output")
+    parser.add_argument("--json", required=False, default=False,  action='store_true', help="Enables route.json output")
+    parser.add_argument("--spansh", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
+    parser.add_argument("--greedy", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
     args = parser.parse_args()
-    global isLoop, isTxt, isJson, isSpansh, isMin
-    isLoop, isTxt, isJson, isSpansh, isMin = args.loop, args.txt, args.json, args.spansh, args.min
-    main()
-    if(not isMin):
-        calc()
-        sortPathBySystem()
-        newDict = sortPathsByDistance()
-        tentative = greedy(newDict)
-        tentative = printPaths(tentative)
-        for el in tentative:
-            print(f"{el[1]} to {el[2]} ({round(el[0], 1)}lys)")
+    global isLoop, isTxt, isJson, isSpansh, isGreedy
+    isLoop, isTxt, isJson, isSpansh, isGreedy = args.loop, args.txt, args.json, args.spansh, args.greedy
+    systems = main()
+    try:
+        if not isGreedy:
+            tentative = otherCalc(systems)
+            printConsole(tentative)
+        if(isGreedy):
+            calc()
+            sortPathBySystem()
+            newDict = sortPathsByDistance()
+            tentative = greedy(newDict)
+            tentative = printPaths(tentative)
+            printConsole(tentative)
+    except Exception as e:
+        router = ""
+        router = "greedy router" if isGreedy else "default router"
+        print(f"Unknown error while using {router}: {e}")
+        write_mode = "a" if "crash.txt" in os.listdir() else "w"
+        with open("crash.txt", write_mode) as f:
+            f.write(f"{dict({str(datetime.datetime.now()):e})}\n")
