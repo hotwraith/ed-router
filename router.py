@@ -18,11 +18,12 @@ def main() -> list[str]:
     sys_dict = {}
 
     i=0
+    start = time.time()
     for el in systems:
         clear = el.removesuffix('\n')
         sys_dict.update({i:requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()})
         i+=1
-
+    print(f"Fetching all systems from EDSM api took: {round(time.time()-start,1)}s")
 
     with open('temp/sys_info.json', 'w') as f:
         json.dump(sys_dict, f, indent=4)
