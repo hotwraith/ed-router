@@ -291,9 +291,10 @@ if __name__ == '__main__':
     parser.add_argument("--json", "-j", required=False, default=False,  action='store_true', help="Enables route.json output")
     parser.add_argument("--spansh", "-s", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
     parser.add_argument("--greedy", "-g", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
+    parser.add_argument("--first", "-f", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
     args = parser.parse_args()
     global isLoop, isTxt, isJson, isSpansh, isGreedy
-    isLoop, isTxt, isJson, isSpansh, isGreedy = args.loop, args.txt, args.json, args.spansh, args.greedy
+    isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first
     systems = main()
     if(len(systems) > 10): #fix: default to greedy algorithm when too much systems are added
         isGreedy = True
@@ -310,17 +311,23 @@ if __name__ == '__main__':
             tentative = greedy(newDict, list(newDict.keys())[0])
             tentative = printPaths(tentative)
             lastSystem = tentative[-1][2]
-            tentative2 = greedy(copyDict, lastSystem)
-            tentative2 = printPaths(tentative2)
-            tentatives = [tentative, tentative2]
-            fullDistances = calcFullDistance(tentatives)
-            index_min = min(range(len(fullDistances)), key=fullDistances.__getitem__)
-            if tentatives[index_min][0][1] != systems[0]:
-                print("Found a shorter alternative path !")
-                tentatives[index_min].reverse()
-                for i in range(len(tentatives[index_min])):
-                    tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
-                    tentatives[index_min][i].pop(-1)
+            tentatives = [tentative]
+            index_min = 0
+            if not (isFirst):
+                lastSystem = tentative[-1][1]
+                tentative2 = greedy(copyDict, lastSystem)
+                tentative2 = printPaths(tentative2)
+                tentatives = [tentative, tentative2]
+                fullDistances = calcFullDistance(tentatives)
+                index_min = min(range(len(fullDistances)), key=fullDistances.__getitem__)
+                if tentatives[index_min][0][1] != systems[0]:
+                    if(isLoop):
+                        tentatives[index_min].pop(-1)
+                    print("\033[1mFound a shorter alternative path !\033[0m")
+                    tentatives[index_min].reverse()
+                    for i in range(len(tentatives[index_min])):
+                        tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
+                        tentatives[index_min][i].pop(-1)
             printPaths(tentatives[index_min])
             printConsole(tentatives[index_min])
     except Exception as e:
