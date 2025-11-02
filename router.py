@@ -1,4 +1,5 @@
 import os
+import copy
 import json
 import math
 import time
@@ -75,9 +76,9 @@ def sortPathsByDistance() -> dict:
         newDict.update({system:distance})
     return newDict
 
-def greedy(newDict:dict) -> list:
+def greedy(newDict:dict, departure:str) -> list:
     paths = []
-    departure = list(newDict.keys())[0]
+    #departure = list(newDict.keys())[0]
     for i in range(len(list(newDict.keys()))):
         try:
             path = newDict[departure][0]
@@ -274,7 +275,8 @@ def calcLastLeg(paths:list) -> list:
     distance = math.sqrt(math.pow(departure["coords"]["x"]-arrival["coords"]["x"],2) + 
                          math.pow(departure["coords"]["y"]-arrival["coords"]["y"],2) + 
                          math.pow(departure["coords"]["z"]-arrival["coords"]["z"], 2))
-    paths.append([distance, departure["name"], arrival["name"]])
+    if(distance > 0):
+        paths.append([distance, departure["name"], arrival["name"]])
     return paths
 
 def printConsole(tentative:list) -> None:
@@ -293,6 +295,9 @@ if __name__ == '__main__':
     global isLoop, isTxt, isJson, isSpansh, isGreedy
     isLoop, isTxt, isJson, isSpansh, isGreedy = args.loop, args.txt, args.json, args.spansh, args.greedy
     systems = main()
+    if(len(systems) > 10): #fix: default to greedy algorithm when too much systems are added
+        isGreedy = True
+        print(f"\033[1mWarning: too many systems ({len(systems)}), defaulted to greedy router\033[0m")
     try:
         if not isGreedy:
             tentative = otherCalc(systems)
@@ -301,9 +306,23 @@ if __name__ == '__main__':
             calc()
             sortPathBySystem()
             newDict = sortPathsByDistance()
-            tentative = greedy(newDict)
+            copyDict = copy.deepcopy(newDict)
+            tentative = greedy(newDict, list(newDict.keys())[0])
             tentative = printPaths(tentative)
-            printConsole(tentative)
+            lastSystem = tentative[-1][2]
+            tentative2 = greedy(copyDict, lastSystem)
+            tentative2 = printPaths(tentative2)
+            tentatives = [tentative, tentative2]
+            fullDistances = calcFullDistance(tentatives)
+            index_min = min(range(len(fullDistances)), key=fullDistances.__getitem__)
+            if tentatives[index_min][0][1] != systems[0]:
+                print("Found a shorter alternative path !")
+                tentatives[index_min].reverse()
+                for i in range(len(tentatives[index_min])):
+                    tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
+                    tentatives[index_min][i].pop(-1)
+            printPaths(tentatives[index_min])
+            printConsole(tentatives[index_min])
     except Exception as e:
         router = ""
         router = "greedy router" if isGreedy else "default router"
