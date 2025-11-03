@@ -118,9 +118,14 @@ def findPathByDistance(distances:list[float]) -> list[dict]:
                 paths.append(all_paths[path])
     return paths
 
-def printPaths(paths:list):
-    departure = paths[0][1]
-    arrival = paths[0][2]
+def printPaths(paths:list, departure):
+    if(departure == paths[0][1]):
+        arrival = paths[0][2]
+    elif(departure == paths[0][2]):
+        temp = paths[0][1]
+        paths[0][1] = departure
+        paths[0][2] = temp
+        arrival = paths[0][2]
     for i in range(1, len(paths)):
         if(paths[i][1] == arrival):
             departure = paths[i][1]
@@ -305,17 +310,41 @@ if __name__ == '__main__':
         if not isGreedy:
             tentative = otherCalc(systems)
             printConsole(tentative)
+            printPaths(tentative, systems[0])
         if(isGreedy):
+            isLoopFR = isLoop
+            isLoop = True
             calc()
             sortPathBySystem()
             newDict = sortPathsByDistance()
-            copyDict = copy.deepcopy(newDict)
-            tentative = greedy(newDict, list(newDict.keys())[0])
-            tentative = printPaths(tentative)
-            lastSystem = tentative[-1][2]
-            tentatives = [tentative]
-            index_min = 0
-            if not (isFirst) and isLoop:
+            tentatives = []
+            for i in range(len(list(newDict.keys()))):
+                copyDict  = copy.deepcopy(newDict)
+                tentatives.append(greedy(copyDict, list(newDict.keys())[i]))
+
+            for i in range(len(tentatives)):
+                printPaths(tentatives[i], systems[i])
+            
+            for i in range(len(tentatives)):
+                while tentatives[i][0][1] != systems[0]:
+                        tentatives[i].insert(0, tentatives[i][-1])
+                        tentatives[i].pop(-1)
+        
+            if not isLoopFR:
+                for el in tentatives:
+                    el.pop(-1)
+            
+            totalDistances = calcFullDistance(tentatives)
+            #print(totalDistances)
+            index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
+            isLoop = isLoopFR
+            print(totalDistances)
+            print(systems[index_min])
+            printPaths(tentatives[index_min], systems[0])
+            printConsole(tentatives[index_min])
+
+            '''
+            if not (isFirst):
                 lastSystem = tentative[-1][1]
                 tentative2 = greedy(copyDict, lastSystem)
                 tentative2 = printPaths(tentative2)
@@ -336,6 +365,7 @@ if __name__ == '__main__':
 
             printPaths(tentatives[index_min])
             printConsole(tentatives[index_min])
+            '''
     except Exception as e:
         router = ""
         router = "greedy router" if isGreedy else "default router"
