@@ -30,6 +30,8 @@ def main() -> list[str]:
         json.dump(sys_dict, f, indent=4)
         f.close()
 
+    for i in range(len(systems)):
+        systems[i] = systems[i].removesuffix('\n')
     
     return systems
 
@@ -313,7 +315,7 @@ if __name__ == '__main__':
             lastSystem = tentative[-1][2]
             tentatives = [tentative]
             index_min = 0
-            if not (isFirst):
+            if not (isFirst) and isLoop:
                 lastSystem = tentative[-1][1]
                 tentative2 = greedy(copyDict, lastSystem)
                 tentative2 = printPaths(tentative2)
@@ -325,9 +327,13 @@ if __name__ == '__main__':
                         tentatives[index_min].pop(-1)
                     print("\033[1mFound a shorter alternative path !\033[0m")
                     tentatives[index_min].reverse()
-                    for i in range(len(tentatives[index_min])):
-                        tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
-                        tentatives[index_min][i].pop(-1)
+                    #for i in range(len(tentatives[index_min])):
+                    #    tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
+                    #    tentatives[index_min][i].pop(-1)
+                    while tentatives[index_min][0][1] != systems[0]:
+                        tentatives[index_min].insert(0, tentatives[index_min][-1])
+                        tentatives[index_min].pop(-1)
+
             printPaths(tentatives[index_min])
             printConsole(tentatives[index_min])
     except Exception as e:
