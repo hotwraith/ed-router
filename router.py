@@ -229,7 +229,7 @@ def calc_between_sys(sys1, sys2, dict_sys):
     distance = dict_sys[str(i)]["distance"]
     
     if(distance > 0):
-        return (distance, sys1, sys2)
+        return [distance, sys1, sys2]
     return None
 
 
@@ -338,8 +338,8 @@ if __name__ == '__main__':
             #print(totalDistances)
             index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
             isLoop = isLoopFR
-            print(totalDistances)
-            print(systems[index_min])
+            #print(totalDistances)
+            #print(systems[index_min])
             printPaths(tentatives[index_min], systems[0])
             printConsole(tentatives[index_min])
 
