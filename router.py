@@ -298,7 +298,7 @@ if __name__ == '__main__':
     parser.add_argument("--json", "-j", required=False, default=False,  action='store_true', help="Enables route.json output")
     parser.add_argument("--spansh", "-s", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
     parser.add_argument("--greedy", "-g", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
-    parser.add_argument("--first", "-f", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
+    parser.add_argument("--first", "-f", required=False, default=False,  action='store_true', help="Deprecated, doesn't do anything")
     args = parser.parse_args()
     global isLoop, isTxt, isJson, isSpansh, isGreedy
     isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first
