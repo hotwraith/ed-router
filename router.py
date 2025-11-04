@@ -332,11 +332,20 @@ if __name__ == '__main__':
         
             if not isLoopFR:
                 for el in tentatives:
-                    el.pop(-1)
-            
+                    if (el[-1][0] >= el[0][0]):
+                        el.pop(-1)
+                    elif (el[-1][0] < el[0][0]):
+                        el.pop(0)
+
             totalDistances = calcFullDistance(tentatives)
-            #print(totalDistances)
             index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
+        
+            while (tentatives[index_min][0][1] != systems[0]) and (tentatives[index_min][0][2] != systems[0]):
+                    tentatives[index_min].insert(0, tentatives[index_min][-1])
+                    tentatives[index_min].pop(-1)
+            
+            
+            #print(totalDistances)
             isLoop = isLoopFR
             #print(totalDistances)
             #print(systems[index_min])
