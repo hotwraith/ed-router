@@ -234,8 +234,9 @@ def calc_between_sys(sys1, sys2, dict_sys):
 
 
 def searchForAllPaths(departure, systems:list) -> list[tuple]:
-    systems.remove(departure)
-    return list(permutations(systems))
+    newsys = copy.deepcopy(systems)
+    newsys.remove(departure)
+    return list(permutations(newsys))
 
 
 def exportJSON(paths:list) -> bool:
@@ -321,37 +322,34 @@ if __name__ == '__main__':
             for i in range(len(list(newDict.keys()))):
                 copyDict  = copy.deepcopy(newDict)
                 tentatives.append(greedy(copyDict, list(newDict.keys())[i]))
-
             for i in range(len(tentatives)):
                 printPaths(tentatives[i], systems[i])
-            
+
             for i in range(len(tentatives)):
                 while tentatives[i][0][1] != systems[0]:
                         tentatives[i].insert(0, tentatives[i][-1])
                         tentatives[i].pop(-1)
-        
+
             if not isLoopFR:
                 for el in tentatives:
                     if (el[-1][0] >= el[0][0]):
                         el.pop(-1)
                     elif (el[-1][0] < el[0][0]):
                         el.pop(0)
-
             totalDistances = calcFullDistance(tentatives)
             index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
-        
+
             while (tentatives[index_min][0][1] != systems[0]) and (tentatives[index_min][0][2] != systems[0]):
                     tentatives[index_min].insert(0, tentatives[index_min][-1])
                     tentatives[index_min].pop(-1)
-            
-            
+
+
             #print(totalDistances)
             isLoop = isLoopFR
             #print(totalDistances)
             #print(systems[index_min])
             printPaths(tentatives[index_min], systems[0])
             printConsole(tentatives[index_min])
-
             '''
             if not (isFirst):
                 lastSystem = tentative[-1][1]
@@ -371,7 +369,6 @@ if __name__ == '__main__':
                     while tentatives[index_min][0][1] != systems[0]:
                         tentatives[index_min].insert(0, tentatives[index_min][-1])
                         tentatives[index_min].pop(-1)
-
             printPaths(tentatives[index_min])
             printConsole(tentatives[index_min])
             '''
