@@ -1,4 +1,5 @@
 import os
+import copy
 import json
 import math
 import time
@@ -18,16 +19,19 @@ def main() -> list[str]:
     sys_dict = {}
 
     i=0
+    start = time.time()
     for el in systems:
         clear = el.removesuffix('\n')
         sys_dict.update({i:requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()})
         i+=1
-
+    print(f"Fetching all systems from EDSM api took: {round(time.time()-start,1)}s")
 
     with open('temp/sys_info.json', 'w') as f:
         json.dump(sys_dict, f, indent=4)
         f.close()
 
+    for i in range(len(systems)):
+        systems[i] = systems[i].removesuffix('\n')
     
     return systems
 
@@ -74,9 +78,9 @@ def sortPathsByDistance() -> dict:
         newDict.update({system:distance})
     return newDict
 
-def greedy(newDict:dict) -> list:
+def greedy(newDict:dict, departure:str) -> list:
     paths = []
-    departure = list(newDict.keys())[0]
+    #departure = list(newDict.keys())[0]
     for i in range(len(list(newDict.keys()))):
         try:
             path = newDict[departure][0]
@@ -114,9 +118,14 @@ def findPathByDistance(distances:list[float]) -> list[dict]:
                 paths.append(all_paths[path])
     return paths
 
-def printPaths(paths:list):
-    departure = paths[0][1]
-    arrival = paths[0][2]
+def printPaths(paths:list, departure):
+    if(departure == paths[0][1]):
+        arrival = paths[0][2]
+    elif(departure == paths[0][2]):
+        temp = paths[0][1]
+        paths[0][1] = departure
+        paths[0][2] = temp
+        arrival = paths[0][2]
     for i in range(1, len(paths)):
         if(paths[i][1] == arrival):
             departure = paths[i][1]
@@ -220,13 +229,14 @@ def calc_between_sys(sys1, sys2, dict_sys):
     distance = dict_sys[str(i)]["distance"]
     
     if(distance > 0):
-        return (distance, sys1, sys2)
+        return [distance, sys1, sys2]
     return None
 
 
 def searchForAllPaths(departure, systems:list) -> list[tuple]:
-    systems.remove(departure)
-    return list(permutations(systems))
+    newsys = copy.deepcopy(systems)
+    newsys.remove(departure)
+    return list(permutations(newsys))
 
 
 def exportJSON(paths:list) -> bool:
@@ -273,7 +283,8 @@ def calcLastLeg(paths:list) -> list:
     distance = math.sqrt(math.pow(departure["coords"]["x"]-arrival["coords"]["x"],2) + 
                          math.pow(departure["coords"]["y"]-arrival["coords"]["y"],2) + 
                          math.pow(departure["coords"]["z"]-arrival["coords"]["z"], 2))
-    paths.append([distance, departure["name"], arrival["name"]])
+    if(distance > 0):
+        paths.append([distance, departure["name"], arrival["name"]])
     return paths
 
 def printConsole(tentative:list) -> None:
@@ -288,21 +299,79 @@ if __name__ == '__main__':
     parser.add_argument("--json", "-j", required=False, default=False,  action='store_true', help="Enables route.json output")
     parser.add_argument("--spansh", "-s", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
     parser.add_argument("--greedy", "-g", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
+    parser.add_argument("--first", "-f", required=False, default=False,  action='store_true', help="Deprecated, doesn't do anything")
     args = parser.parse_args()
     global isLoop, isTxt, isJson, isSpansh, isGreedy
-    isLoop, isTxt, isJson, isSpansh, isGreedy = args.loop, args.txt, args.json, args.spansh, args.greedy
+    isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first
     systems = main()
+    if(len(systems) > 10): #fix: default to greedy algorithm when too much systems are added
+        isGreedy = True
+        print(f"\033[1mWarning: too many systems ({len(systems)}), defaulted to greedy router\033[0m")
     try:
         if not isGreedy:
             tentative = otherCalc(systems)
             printConsole(tentative)
+            printPaths(tentative, systems[0])
         if(isGreedy):
+            isLoopFR = isLoop
+            isLoop = True
             calc()
             sortPathBySystem()
             newDict = sortPathsByDistance()
-            tentative = greedy(newDict)
-            tentative = printPaths(tentative)
-            printConsole(tentative)
+            tentatives = []
+            for i in range(len(list(newDict.keys()))):
+                copyDict  = copy.deepcopy(newDict)
+                tentatives.append(greedy(copyDict, list(newDict.keys())[i]))
+            for i in range(len(tentatives)):
+                printPaths(tentatives[i], systems[i])
+
+            for i in range(len(tentatives)):
+                while tentatives[i][0][1] != systems[0]:
+                        tentatives[i].insert(0, tentatives[i][-1])
+                        tentatives[i].pop(-1)
+
+            if not isLoopFR:
+                for el in tentatives:
+                    if (el[-1][0] >= el[0][0]):
+                        el.pop(-1)
+                    elif (el[-1][0] < el[0][0]):
+                        el.pop(0)
+            totalDistances = calcFullDistance(tentatives)
+            index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
+
+            while (tentatives[index_min][0][1] != systems[0]) and (tentatives[index_min][0][2] != systems[0]):
+                    tentatives[index_min].insert(0, tentatives[index_min][-1])
+                    tentatives[index_min].pop(-1)
+
+
+            #print(totalDistances)
+            isLoop = isLoopFR
+            #print(totalDistances)
+            #print(systems[index_min])
+            printPaths(tentatives[index_min], systems[0])
+            printConsole(tentatives[index_min])
+            '''
+            if not (isFirst):
+                lastSystem = tentative[-1][1]
+                tentative2 = greedy(copyDict, lastSystem)
+                tentative2 = printPaths(tentative2)
+                tentatives = [tentative, tentative2]
+                fullDistances = calcFullDistance(tentatives)
+                index_min = min(range(len(fullDistances)), key=fullDistances.__getitem__)
+                if tentatives[index_min][0][1] != systems[0]:
+                    if(isLoop):
+                        tentatives[index_min].pop(-1)
+                    print("\033[1mFound a shorter alternative path !\033[0m")
+                    tentatives[index_min].reverse()
+                    #for i in range(len(tentatives[index_min])):
+                    #    tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
+                    #    tentatives[index_min][i].pop(-1)
+                    while tentatives[index_min][0][1] != systems[0]:
+                        tentatives[index_min].insert(0, tentatives[index_min][-1])
+                        tentatives[index_min].pop(-1)
+            printPaths(tentatives[index_min])
+            printConsole(tentatives[index_min])
+            '''
     except Exception as e:
         router = ""
         router = "greedy router" if isGreedy else "default router"
