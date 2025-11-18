@@ -6,25 +6,22 @@ import time
 import datetime
 import requests
 import argparse
+import traceback
 from itertools import permutations
 
 
 def main() -> list[str]:
     if 'temp' not in os.listdir():
         os.mkdir('temp')
+    if 'all_sys.json' not in os.listdir('temp'):
+        f = open('temp/all_sys.json', 'w')
+        json.dump({}, f)
+        f.close()
     with open('systems.txt', 'r') as f:
         systems = f.readlines()
         f.close()
 
-    sys_dict = {}
-
-    i=0
-    start = time.time()
-    for el in systems:
-        clear = el.removesuffix('\n')
-        sys_dict.update({i:requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()})
-        i+=1
-    print(f"Fetching all systems from EDSM api took: {round(time.time()-start,1)}s")
+    sys_dict = fetchEDSM(systems)
 
     with open('temp/sys_info.json', 'w') as f:
         json.dump(sys_dict, f, indent=4)
@@ -39,10 +36,11 @@ def calc() -> None:
     allPaths = {}
     z = 0
     dict_sys = json.load(open('temp/sys_info.json', 'r'))
-    for i in range(len(list(dict_sys.keys()))):
-        for j in range(i+1, len(list(dict_sys.keys()))):
-            system1 = dict_sys[str(i)]
-            system2 = dict_sys[str(j)]
+    sys_keys = list(dict_sys.keys())
+    for i in range(len(sys_keys)):
+        for j in range(i+1, len(sys_keys)):
+            system1 = dict_sys[sys_keys[i]]
+            system2 = dict_sys[sys_keys[j]]
             distance = math.sqrt(math.pow(system1["coords"]["x"]-system2["coords"]["x"],2) + math.pow(system1["coords"]["y"]-system2["coords"]["y"],2) + math.pow(system1["coords"]["z"]-system2["coords"]["z"], 2))
             #print(f"Distance between {system1["name"]} and {system2["name"]}: {round(distance, 2)}lys")
             if(distance > 0):
@@ -66,7 +64,29 @@ def sortPathBySystem() -> None:
                 i += 1
     json.dump(paths_per_system, open('temp/min_paths.json', 'w') ,indent=4)
                     
-                
+def fetchEDSM(systems:list[str]) -> dict:
+    start = time.time()
+    existing_dict = json.load(open('temp/all_sys.json', 'r'))
+    existing_sys = []
+    for el in list(existing_dict.keys()):
+        existing_sys.append(el)
+    sys_dict = {}
+    i=0
+    for el in systems:
+        clear = el.removesuffix('\n')
+        if clear not in existing_sys:
+            thisSys = requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()
+            sys_dict.update({thisSys["name"]:thisSys})
+            existing_dict.update({thisSys["name"]:thisSys})
+        else:
+            sys_dict.update({el:existing_dict[clear]})
+        i+=1
+    with open('temp/all_sys.json', 'w') as f:
+        json.dump(existing_dict, f)
+        f.close()
+    print(f"Fetching all systems from EDSM api took: {round(time.time()-start,1)}s")
+    return sys_dict
+
 def sortPathsByDistance() -> dict:
     systems_path = json.load(open('temp/min_paths.json', 'r'))
     newDict = {}
@@ -300,9 +320,10 @@ if __name__ == '__main__':
     parser.add_argument("--spansh", "-s", required=False, default=False,  action='store_true', help="Enables spansh_route.txt output, uploadable directly to Spansh")
     parser.add_argument("--greedy", "-g", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
     parser.add_argument("--first", "-f", required=False, default=False,  action='store_true', help="Deprecated, doesn't do anything")
+    parser.add_argument("--debug", "-d", required=False, default=False,  action='store_true', help="Debug log")
     args = parser.parse_args()
-    global isLoop, isTxt, isJson, isSpansh, isGreedy
-    isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first
+    global isLoop, isTxt, isJson, isSpansh, isGreedy, isDebug
+    isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst, isDebug = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first, args.debug
     systems = main()
     if(len(systems) > 10): #fix: default to greedy algorithm when too much systems are added
         isGreedy = True
@@ -373,6 +394,8 @@ if __name__ == '__main__':
             printConsole(tentatives[index_min])
             '''
     except Exception as e:
+        if(isDebug):
+            print(traceback.format_exc())
         router = ""
         router = "greedy router" if isGreedy else "default router"
         print(f"Unknown error while using {router}: {e}")
