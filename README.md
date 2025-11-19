@@ -43,6 +43,7 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
     - add `--spansh`, `-s` to: output a `spansh_route.txt` file uploadable to [Spansh](https://spansh.co.uk/)
     - add `--txt`, `-t` to: turn off the `route.txt` output
     - add `--greedy`, `-g` to: use a greedy algorithm when searching for routes
+    - add `-d`, `--debug` to: triggers debug logging when an error is catched
     - add `-h`, `--help` to: display the help message about args
 
 ### .exe
@@ -52,3 +53,10 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
     - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems_example.txt) file contains an example route
 - Double click `router.exe`
 - Output will be in `route.txt`
+
+## Notes
+
+- By default the script will try to store temporary and persistent data in `~\AppData\Local\ed-router\`.
+    - `temp` only contains temporary files that are replaced/rewritten each time the router is ran.
+    - `persistent` contains some permanent/semi-permanent file to optimize the router/log errors:
+        - `all_sys.json`: a local copy of all systems you've ever put through the router to diminish the number of requests to EDSM's API, unless you plan on routing between the entirety of systems in EDSM's database the file size should stay relatively small
