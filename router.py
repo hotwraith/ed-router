@@ -11,10 +11,23 @@ from itertools import permutations
 
 
 def main() -> list[str]:
-    if 'temp' not in os.listdir():
-        os.mkdir('temp')
-    if 'all_sys.json' not in os.listdir('temp'):
-        f = open('temp/all_sys.json', 'w')
+    try:
+        LOCALAPPDATA = os.environ["LOCALAPPDATA"]
+    except Exception:
+        LOCALAPPDATA = ""
+    global fullpath
+    fullpath = LOCALAPPDATA
+    if "ed-router" not in os.listdir(LOCALAPPDATA):
+        fullpath = os.path.join(LOCALAPPDATA, 'ed-router')
+        os.mkdir(fullpath)
+    else:
+        fullpath = os.path.join(LOCALAPPDATA, 'ed-router')
+    if 'temp' not in os.listdir(fullpath):
+        os.mkdir(os.path.join(fullpath,'temp'))
+    if 'persistent' not in os.listdir(fullpath):
+        os.mkdir(os.path.join(fullpath,'persistent'))
+    if 'all_sys.json' not in os.listdir(os.path.join(fullpath,'persistent')):
+        f = open(os.path.join(fullpath,'persistent','all_sys.json'), 'w')
         json.dump({}, f)
         f.close()
     with open('systems.txt', 'r') as f:
@@ -23,7 +36,7 @@ def main() -> list[str]:
 
     sys_dict = fetchEDSM(systems)
 
-    with open('temp/sys_info.json', 'w') as f:
+    with open(os.path.join(fullpath,'temp','sys_info.json'), 'w') as f:
         json.dump(sys_dict, f, indent=4)
         f.close()
 
@@ -35,7 +48,7 @@ def main() -> list[str]:
 def calc() -> None:
     allPaths = {}
     z = 0
-    dict_sys = json.load(open('temp/sys_info.json', 'r'))
+    dict_sys = json.load(open(os.path.join(fullpath,'temp','sys_info.json'), 'r'))
     sys_keys = list(dict_sys.keys())
     for i in range(len(sys_keys)):
         for j in range(i+1, len(sys_keys)):
@@ -47,13 +60,13 @@ def calc() -> None:
                 allPaths.update({z: {"systems": {0: system1["name"], 1:system2["name"]}, "distance":distance}})
                 z += 1
 
-    with open("temp/all_paths.json", 'w') as f:
+    with open(os.path.join(fullpath,'temp','all_paths.json'), 'w') as f:
         json.dump(allPaths, f, indent=4)
         f.close()
 
 def sortPathBySystem() -> None:
-    allPaths = json.load(open('temp/all_paths.json', 'r'))
-    dict_sys = json.load(open('temp/sys_info.json', 'r'))
+    allPaths = json.load(open(os.path.join(fullpath,'temp','all_paths.json'), 'r'))
+    dict_sys = json.load(open(os.path.join(fullpath,'temp','sys_info.json'), 'r'))
     paths_per_system = {}
     for system in list(dict_sys.keys()):
         i=0
@@ -62,11 +75,11 @@ def sortPathBySystem() -> None:
             if((dict_sys[system]["name"] in allPaths[path]["systems"]["0"]) or (dict_sys[system]["name"] in allPaths[path]["systems"]["1"])): 
                 paths_per_system[dict_sys[system]["name"]].update({i:allPaths[path]})
                 i += 1
-    json.dump(paths_per_system, open('temp/min_paths.json', 'w') ,indent=4)
+    json.dump(paths_per_system, open(os.path.join(fullpath,'temp','min_paths.json'), 'w') ,indent=4)
                     
 def fetchEDSM(systems:list[str]) -> dict:
     start = time.time()
-    existing_dict = json.load(open('temp/all_sys.json', 'r'))
+    existing_dict = json.load(open(os.path.join(fullpath,'persistent','all_sys.json'), 'r'))
     existing_sys = []
     for el in list(existing_dict.keys()):
         existing_sys.append(el)
@@ -76,19 +89,22 @@ def fetchEDSM(systems:list[str]) -> dict:
         clear = el.removesuffix('\n')
         if clear not in existing_sys:
             thisSys = requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()
-            sys_dict.update({thisSys["name"]:thisSys})
-            existing_dict.update({thisSys["name"]:thisSys})
+            if(type(thisSys) is list):
+                print(f"\033[31mError when trying to fetch system \"{clear}\" from EDSM API, check spelling in systems.txt\033[0m")
+            else:
+                sys_dict.update({thisSys["name"]:thisSys})
+                existing_dict.update({thisSys["name"]:thisSys})
         else:
             sys_dict.update({el:existing_dict[clear]})
         i+=1
-    with open('temp/all_sys.json', 'w') as f:
+    with open(os.path.join(fullpath,'persistent','all_sys.json'), 'w') as f:
         json.dump(existing_dict, f)
         f.close()
     print(f"Fetching all systems from EDSM api took: {round(time.time()-start,1)}s")
     return sys_dict
 
 def sortPathsByDistance() -> dict:
-    systems_path = json.load(open('temp/min_paths.json', 'r'))
+    systems_path = json.load(open(os.path.join(fullpath,'temp','min_paths.json'), 'r'))
     newDict = {}
     for system in list(systems_path.keys()):
         distance = []
@@ -130,7 +146,7 @@ def deleter(system:str, diction:dict)-> dict:
     return diction
         
 def findPathByDistance(distances:list[float]) -> list[dict]:
-    all_paths = json.load(open('temp/all_paths.json', 'r'))
+    all_paths = json.load(open(os.path.join(fullpath,'temp','all_paths.json'), 'r'))
     paths = []
     for dist in distances:
         for path in list(all_paths.keys()):
@@ -184,7 +200,7 @@ def otherCalc(systems):
     
     start = time.time()
     calc()
-    dict_sys = json.load(open('temp/all_paths.json', 'r'))
+    dict_sys = json.load(open(os.path.join(fullpath,'temp','all_paths.json'), 'r'))
     for route in allPaths:
         for i in range(len(route)-1):
             route[i] = calc_between_sys(route[i], route[i+1], dict_sys)
@@ -207,7 +223,7 @@ def otherCalc(systems):
     if(isJson):
         exportJSON(list(allPaths[index_min]))
     return allPaths[index_min]
-    #with open('spansh_minimal_route.txt', 'w') as f:
+    #with open(fullpath+'spansh_minimal_route.txt', 'w') as f:
     #    for i in range(len(allPaths[index_min])):
     #        f.write(f'{allPaths[index_min][i][1]}\n')
     #    f.close()
@@ -400,5 +416,5 @@ if __name__ == '__main__':
         router = "greedy router" if isGreedy else "default router"
         print(f"Unknown error while using {router}: {e}")
         write_mode = "a" if "crash.txt" in os.listdir() else "w"
-        with open("crash.txt", write_mode) as f:
+        with open(os.path.join(fullpath,'persistent','crash.txt'), write_mode) as f:
             f.write(f"{dict({str(datetime.datetime.now()):e})}\n")
