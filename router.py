@@ -360,7 +360,7 @@ if __name__ == '__main__':
                 else:
                     print("No crash logs !")
         else:
-            if(len(systems) > 10): #fix: default to greedy algorithm when too much systems are added
+            if(len(systems) > 9): #fix: default to greedy algorithm when too much systems are added
                 isGreedy = True
                 print(f"\033[1mWarning: too many systems ({len(systems)}), defaulted to greedy router\033[0m")
             if not isGreedy:
