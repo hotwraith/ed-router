@@ -34,14 +34,15 @@ def main() -> list[str]:
         systems = f.readlines()
         f.close()
 
-    sys_dict = fetchEDSM(systems)
+    if not (isCrash >= 0):
+        sys_dict = fetchEDSM(systems)
 
-    with open(os.path.join(fullpath,'temp','sys_info.json'), 'w') as f:
-        json.dump(sys_dict, f, indent=4)
-        f.close()
+        with open(os.path.join(fullpath,'temp','sys_info.json'), 'w') as f:
+            json.dump(sys_dict, f, indent=4)
+            f.close()
 
-    for i in range(len(systems)):
-        systems[i] = systems[i].removesuffix('\n')
+        for i in range(len(systems)):
+            systems[i] = systems[i].removesuffix('\n')
     
     return systems
 
@@ -337,89 +338,97 @@ if __name__ == '__main__':
     parser.add_argument("--greedy", "-g", required=False, default=False,  action='store_true', help="Uses a greedy algorithm to find a different path")
     parser.add_argument("--first", "-f", required=False, default=False,  action='store_true', help="Deprecated, doesn't do anything")
     parser.add_argument("--debug", "-d", required=False, default=False,  action='store_true', help="Debug log")
-    parser.add_argument("--crash", "-c", required=False, default=False,  action='store_true', help="Debug log")
+    parser.add_argument("--crash", "-c", required=False, default=-1, type=int, help="Will print the nth oldest crash traceback (0 will yield the last crash)")
     args = parser.parse_args()
-    global isLoop, isTxt, isJson, isSpansh, isGreedy, isDebug
+    global isLoop, isTxt, isJson, isSpansh, isGreedy, isDebug, isCrash
     isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst, isDebug, isCrash = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first, args.debug, args.crash
     systems = main()
     try:
-        if(isCrash):
+        if(isCrash >= 0):
             with open(os.path.join(fullpath,'persistent','crash.txt')) as f:
                 lines = f.readlines()
-                #print(lines[-2])
-                error_dict = json.loads(lines[-2].removesuffix("\n"))
-                #print(error_dict)
-                error_time = list(error_dict.keys())[0]
-                for el in error_dict[error_time]:
-                    print(el+"\n")
+                if(len(lines) > 0):
+                    if(isCrash < len(lines)):
+                        index = len(lines) - isCrash - 1
+                        error_dict = json.loads(lines[index].removesuffix("\n"))
+                        #print(error_dict)
+                        error_time = list(error_dict.keys())[0]
+                        for el in error_dict[error_time]:
+                            print(el+"\n")
+                    else:
+                        print(f"Please input 0<=n<={len(lines)-1}")
+                else:
+                    print("No crash logs !")
         else:
             if(len(systems) > 10): #fix: default to greedy algorithm when too much systems are added
                 isGreedy = True
                 print(f"\033[1mWarning: too many systems ({len(systems)}), defaulted to greedy router\033[0m")
-                if not isGreedy:
-                    tentative = otherCalc(systems)
-                    printConsole(tentative)
-                    printPaths(tentative, systems[0])
-                if(isGreedy):
-                    isLoopFR = isLoop
-                    isLoop = True
-                    calc()
-                    sortPathBySystem()
-                    newDict = sortPathsByDistance()
-                    tentatives = []
-                    for i in range(len(list(newDict.keys()))):
-                        copyDict  = copy.deepcopy(newDict)
-                        tentatives.append(greedy(copyDict, list(newDict.keys())[i]))
-                    for i in range(len(tentatives)):
-                        printPaths(tentatives[i], systems[i])
+            if not isGreedy:
+                tentative = otherCalc(systems)
+                print("="*50)
+                printConsole(tentative)
+                printPaths(tentative, systems[0])
+            if(isGreedy):
+                isLoopFR = isLoop
+                isLoop = True
+                calc()
+                sortPathBySystem()
+                newDict = sortPathsByDistance()
+                tentatives = []
+                for i in range(len(list(newDict.keys()))):
+                    copyDict  = copy.deepcopy(newDict)
+                    tentatives.append(greedy(copyDict, list(newDict.keys())[i]))
+                for i in range(len(tentatives)):
+                    printPaths(tentatives[i], systems[i])
 
-                    for i in range(len(tentatives)):
-                        while tentatives[i][0][1] != systems[0]:
-                                tentatives[i].insert(0, tentatives[i][-1])
-                                tentatives[i].pop(-1)
+                for i in range(len(tentatives)):
+                    while tentatives[i][0][1] != systems[0]:
+                            tentatives[i].insert(0, tentatives[i][-1])
+                            tentatives[i].pop(-1)
 
-                    if not isLoopFR:
-                        for el in tentatives:
-                            if (el[-1][0] >= el[0][0]):
-                                el.pop(-1)
-                            elif (el[-1][0] < el[0][0]):
-                                el.pop(0)
-                    totalDistances = calcFullDistance(tentatives)
-                    index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
+                if not isLoopFR:
+                    for el in tentatives:
+                        if (el[-1][0] >= el[0][0]):
+                            el.pop(-1)
+                        elif (el[-1][0] < el[0][0]):
+                            el.pop(0)
+                totalDistances = calcFullDistance(tentatives)
+                index_min = min(range(len(totalDistances)), key=totalDistances.__getitem__)
 
-                    while (tentatives[index_min][0][1] != systems[0]) and (tentatives[index_min][0][2] != systems[0]):
+                while (tentatives[index_min][0][1] != systems[0]) and (tentatives[index_min][0][2] != systems[0]):
+                        tentatives[index_min].insert(0, tentatives[index_min][-1])
+                        tentatives[index_min].pop(-1)
+
+
+                #print(totalDistances)
+                isLoop = isLoopFR
+                #print(totalDistances)
+                #print(systems[index_min])
+                printPaths(tentatives[index_min], systems[0])
+                print("="*50)
+                printConsole(tentatives[index_min])
+                '''
+                if not (isFirst):
+                    lastSystem = tentative[-1][1]
+                    tentative2 = greedy(copyDict, lastSystem)
+                    tentative2 = printPaths(tentative2)
+                    tentatives = [tentative, tentative2]
+                    fullDistances = calcFullDistance(tentatives)
+                    index_min = min(range(len(fullDistances)), key=fullDistances.__getitem__)
+                    if tentatives[index_min][0][1] != systems[0]:
+                        if(isLoop):
+                            tentatives[index_min].pop(-1)
+                        print("\033[1mFound a shorter alternative path !\033[0m")
+                        tentatives[index_min].reverse()
+                        #for i in range(len(tentatives[index_min])):
+                        #    tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
+                        #    tentatives[index_min][i].pop(-1)
+                        while tentatives[index_min][0][1] != systems[0]:
                             tentatives[index_min].insert(0, tentatives[index_min][-1])
                             tentatives[index_min].pop(-1)
-
-
-                    #print(totalDistances)
-                    isLoop = isLoopFR
-                    #print(totalDistances)
-                    #print(systems[index_min])
-                    printPaths(tentatives[index_min], systems[0])
-                    printConsole(tentatives[index_min])
-                    '''
-                    if not (isFirst):
-                        lastSystem = tentative[-1][1]
-                        tentative2 = greedy(copyDict, lastSystem)
-                        tentative2 = printPaths(tentative2)
-                        tentatives = [tentative, tentative2]
-                        fullDistances = calcFullDistance(tentatives)
-                        index_min = min(range(len(fullDistances)), key=fullDistances.__getitem__)
-                        if tentatives[index_min][0][1] != systems[0]:
-                            if(isLoop):
-                                tentatives[index_min].pop(-1)
-                            print("\033[1mFound a shorter alternative path !\033[0m")
-                            tentatives[index_min].reverse()
-                            #for i in range(len(tentatives[index_min])):
-                            #    tentatives[index_min][i].insert(1, tentatives[index_min][i][-1])
-                            #    tentatives[index_min][i].pop(-1)
-                            while tentatives[index_min][0][1] != systems[0]:
-                                tentatives[index_min].insert(0, tentatives[index_min][-1])
-                                tentatives[index_min].pop(-1)
-                    printPaths(tentatives[index_min])
-                    printConsole(tentatives[index_min])
-                    '''
+                printPaths(tentatives[index_min])
+                printConsole(tentatives[index_min])
+                '''
     except Exception as e:
         if(isDebug):
             print(traceback.format_exc())
@@ -428,4 +437,4 @@ if __name__ == '__main__':
         print(f"Unknown error while using {router}: {e}")
         write_mode = "a" if "crash.txt" in os.listdir() else "w"
         with open(os.path.join(fullpath,'persistent','crash.txt'), write_mode) as f:
-            f.write(f"{dict({str(datetime.datetime.now()):[traceback.format_exc().split("\n")]})}\n")
+            f.write(json.dumps({str(datetime.datetime.now()):traceback.format_exc().split("\n")})+"\n")
