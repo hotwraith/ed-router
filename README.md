@@ -8,6 +8,7 @@
 - [Usage](#usage)
     - [Python](#python1)
     - [.exe standalone](#exe)
+- [Notes](#notes)
 
 ## Setup
 ### Python 
@@ -43,6 +44,8 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
     - add `--spansh`, `-s` to: output a `spansh_route.txt` file uploadable to [Spansh](https://spansh.co.uk/)
     - add `--txt`, `-t` to: turn off the `route.txt` output
     - add `--greedy`, `-g` to: use a greedy algorithm when searching for routes
+    - add `-d`, `--debug` to: triggers debug logging when an error is catched
+    - add `-c n`, `--crash n` to: print the nth most recent crash log, where n must be an integer between 0 and the number of crash logs you have (the script will tell you how many you have if you input a number too big). 0 will print the most recent crash log.
     - add `-h`, `--help` to: display the help message about args
 
 ### .exe
@@ -52,3 +55,11 @@ Warning: the .exe standalone doesn't allow to use some options, the python versi
     - The [`systems_example.txt`](https://github.com/hotwraith/ed-router/blob/main/systems_example.txt) file contains an example route
 - Double click `router.exe`
 - Output will be in `route.txt`
+
+## Notes
+
+- By default the script will try to store temporary and persistent data in `~\AppData\Local\ed-router\`.
+    - `temp` only contains temporary files that are replaced/rewritten each time the router is ran.
+    - `persistent` contains some permanent/semi-permanent file to optimize the router/log errors:
+        - `all_sys.json`: a local copy of all systems you've ever put through the router to diminish the number of requests to EDSM's API, unless you plan on routing between the entirety of systems in EDSM's database the file size should stay relatively small
+        - `crash.txt`: Contains crash reports and time of crashes of when the router failed, using the `-c` option while running the router allows to nicely print those errors in your console to understand the issue better (more often than never it'll be a spelling error in a name you put in `systems.txt`)
