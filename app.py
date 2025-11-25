@@ -58,8 +58,8 @@ class Buttons(Frame):
         button_spansh = Checkbutton(self, text='Spansh',variable=isSpansh, onvalue=1, offvalue=0, command=lambda: self.set_command(isSpansh, button_spansh))
         button_json = Checkbutton(self, text='JSON output',variable=isJson, onvalue=1, offvalue=0, command=lambda: self.set_command(isJson, button_json))
         button_greedy = Checkbutton(self, text='Use greedy algorithm',variable=isGreedy, onvalue=1, offvalue=0, command=lambda: self.set_command(isGreedy, button_greedy))
-        button_save = Button(self, text='Parcourir', command=self.select_save_path)
-        button_save.pack(side=RIGHT)
+        button_save = Button(self, text='Save output', command=self.select_save_path)
+        button_save.pack(side=RIGHT, padx=20)
         button_loop.pack(side=LEFT)
         button_spansh.pack(side=LEFT)
         button_json.pack(side=LEFT)
@@ -68,6 +68,7 @@ class Buttons(Frame):
 
     def select_save_path(self):
         self.file_save = filedialog.askdirectory(initialdir = "/", title = "Select file")
+        global OUTPUT_PATH
         OUTPUT_PATH = str(self.file_save)
         set_key('.env', 'OUTPUT_PATH', self.file_save)
         load_dotenv()
@@ -102,7 +103,6 @@ def make_menus(l_frame, r_frame):
         top.config(menu=file_menu)
         l_frame.file_menu = Menu(file_menu)
         file_menu.add_cascade(label="File", menu=l_frame.file_menu)
-        l_frame.file_menu.add_command(label="New")
         l_frame.file_menu.add_command(label="Open",      command=l_frame.open_file_function)
         l_frame.file_menu.add_command(label="Save", command=l_frame.save_file_function)
         l_frame.file_menu.add_separator()
@@ -114,8 +114,9 @@ def make_menus(l_frame, r_frame):
         r_frame.router.add_separator()
         r_frame.router.add_command(label="Exit")
 
-OUTPUT_PATH = ''
+global OUTPUT_PATH
 load_dotenv()
+OUTPUT_PATH = os.getenv('OUTPUT_PATH', '')
 top = Tk()
 top.geometry("1000x500")
 top.title("Elite: Dangerous Router")
@@ -124,6 +125,7 @@ main_frame = Frame(top)
 main_frame.pack(fill=BOTH, expand=1, side=TOP)
 l_frame = Window(main_frame)
 l_frame.pack(side=LEFT)
+l_frame.open_file_function()
 l_frame.pack_propagate(0)
 r_frame = Window(main_frame)
 r_frame.pack(side=RIGHT)
