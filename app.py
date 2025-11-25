@@ -1,6 +1,8 @@
+import os
+import subprocess
 from tkinter import *
 from tkinter import filedialog
-import subprocess
+from dotenv import load_dotenv, set_key
 
 
 class Window(Frame):
@@ -18,6 +20,7 @@ class Window(Frame):
         #self.scrollbar.pack(side=RIGHT, fill=Y, expand=True)
 #
         #self.text.config(yscrollcommand=self.scrollbar.set)
+
 
     def open_file_function(self):
 
@@ -38,7 +41,7 @@ class Window(Frame):
         self.text.config(state=NORMAL)
         if(len(self.text.get("1.0", 'end-1c')) > 0):
             self.text.delete(1.0, END)
-        with open('route.txt') as file:
+        with open(os.path.join(OUTPUT_PATH, 'route.txt')) as file:
             for i in file:
                 self.text.insert(END, i)
             file.close()
@@ -55,12 +58,19 @@ class Buttons(Frame):
         button_spansh = Checkbutton(self, text='Spansh',variable=isSpansh, onvalue=1, offvalue=0, command=lambda: self.set_command(isSpansh, button_spansh))
         button_json = Checkbutton(self, text='JSON output',variable=isJson, onvalue=1, offvalue=0, command=lambda: self.set_command(isJson, button_json))
         button_greedy = Checkbutton(self, text='Use greedy algorithm',variable=isGreedy, onvalue=1, offvalue=0, command=lambda: self.set_command(isGreedy, button_greedy))
-        button_loop.pack()
-        button_spansh.pack()
-        button_json.pack()
-        button_greedy.pack()
+        button_save = Button(self, text='Parcourir', command=self.select_save_path)
+        button_save.pack(side=RIGHT)
+        button_loop.pack(side=LEFT)
+        button_spansh.pack(side=LEFT)
+        button_json.pack(side=LEFT)
+        button_greedy.pack(side=LEFT)
 
 
+    def select_save_path(self):
+        self.file_save = filedialog.askdirectory(initialdir = "/", title = "Select file")
+        OUTPUT_PATH = str(self.file_save)
+        set_key('.env', 'OUTPUT_PATH', self.file_save)
+        load_dotenv()
 
     def set_command(self, var:IntVar=None, button:Checkbutton=None) -> None:
         match button.config('text')[-1]:
@@ -104,6 +114,8 @@ def make_menus(l_frame, r_frame):
         r_frame.router.add_separator()
         r_frame.router.add_command(label="Exit")
 
+OUTPUT_PATH = ''
+load_dotenv()
 top = Tk()
 top.geometry("1000x500")
 top.title("Elite: Dangerous Router")
