@@ -51,7 +51,7 @@ class Buttons(Frame):
     def __init__(self, master=None, anch=LEFT):
         Frame.__init__(self, master, width=200, height=200)
         self.master = master
-
+        global save_location
         self.pack(fill=X, expand=True)
         isLoop, isSpansh, isJson, isGreedy  = IntVar(), IntVar(), IntVar(), IntVar()
         button_loop = Checkbutton(self, text='Loop',variable=isLoop, onvalue=1, offvalue=0, command=lambda: self.set_command(isLoop, button_loop))
@@ -59,6 +59,8 @@ class Buttons(Frame):
         button_json = Checkbutton(self, text='JSON output',variable=isJson, onvalue=1, offvalue=0, command=lambda: self.set_command(isJson, button_json))
         button_greedy = Checkbutton(self, text='Use greedy algorithm',variable=isGreedy, onvalue=1, offvalue=0, command=lambda: self.set_command(isGreedy, button_greedy))
         button_save = Button(self, text='Save output', command=self.select_save_path)
+        save_location = Label(self, text=OUTPUT_PATH)
+        save_location.pack(side=RIGHT, padx=20)
         button_save.pack(side=RIGHT, padx=20)
         button_loop.pack(side=LEFT)
         button_spansh.pack(side=LEFT)
@@ -70,6 +72,7 @@ class Buttons(Frame):
         self.file_save = filedialog.askdirectory(initialdir = "/", title = "Select file")
         global OUTPUT_PATH
         OUTPUT_PATH = str(self.file_save)
+        save_location['text'] = self.file_save
         set_key('.env', 'OUTPUT_PATH', self.file_save)
         load_dotenv()
 
@@ -102,21 +105,34 @@ def make_menus(l_frame, r_frame):
         file_menu = Menu(top)
         top.config(menu=file_menu)
         l_frame.file_menu = Menu(file_menu)
-        file_menu.add_cascade(label="File", menu=l_frame.file_menu)
+        file_menu.add_cascade(label="File", menu=l_frame.file_menu, )
         l_frame.file_menu.add_command(label="Open",      command=l_frame.open_file_function)
         l_frame.file_menu.add_command(label="Save", command=l_frame.save_file_function)
         l_frame.file_menu.add_separator()
-        l_frame.file_menu.add_command(label="Exit")
+        #l_frame.file_menu.add_command(label="Exit")
 
         r_frame.router = Menu(file_menu)
-        file_menu.add_cascade(label="Router", menu=r_frame.router)
-        r_frame.router.add_command(label="Run",      command=r_frame.run_router)
-        r_frame.router.add_separator()
-        r_frame.router.add_command(label="Exit")
+        #file_menu.add_cascade(label="Router", menu=r_frame.router)
+        file_menu.add_command(label='Run router', command=lambda:[l_frame.save_file_function(), r_frame.run_router()])
+        #r_frame.router.add_command(label="Run",      command=r_frame.run_router)
+        #r_frame.router.add_separator()
+        #r_frame.router.add_command(label="Exit")
+
+
+def redefine_save(path:str):
+    if(path == '%USERPROFILE%\\Downloads\\'):
+        path = path.replace(str('%USERPROFILE%'), str(os.getenv('USERPROFILE')))
+        set_key('.env', 'OUTPUT_PATH', path)
+        os.environ['OUTPUT_PATH'] = path
+        load_dotenv()
+        return path
+    else:
+        return path
 
 global OUTPUT_PATH
 load_dotenv()
 OUTPUT_PATH = os.getenv('OUTPUT_PATH', '')
+OUTPUT_PATH = redefine_save(OUTPUT_PATH)
 top = Tk()
 top.geometry("1000x500")
 top.title("Elite: Dangerous Router")
