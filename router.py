@@ -307,6 +307,7 @@ def exportTXT(paths:list) -> bool:
         with open(os.path.join(OUTPUT_PATH, "route.txt"), 'w') as f:
             for jump in paths:
                 f.write(f"{jump[1]} -> {jump[2]} ({round(jump[0])} lys)\n")
+            f.write(f"Total distance: {round(calcFullDistance([paths])[0], 2)} lys")
             f.close()
 
         return True
