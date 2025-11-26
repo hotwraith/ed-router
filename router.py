@@ -8,6 +8,7 @@ import requests
 import argparse
 import traceback
 from itertools import permutations
+from dotenv import load_dotenv
 
 
 def main() -> list[str]:
@@ -278,7 +279,7 @@ def searchForAllPaths(departure, systems:list) -> list[tuple]:
 
 def exportJSON(paths:list) -> bool:
     try:
-        with open("route.json", 'w') as f:
+        with open(os.path.join(OUTPUT_PATH, "route.json"), 'w') as f:
             dump = {}
             for i in range(len(paths)):
                 dump.update({i:paths[i]})
@@ -291,7 +292,7 @@ def exportJSON(paths:list) -> bool:
 
 def exportSpansh(paths:list) -> bool:
     try:
-        with open("spansh_route.txt", 'w') as f:
+        with open(os.path.join(OUTPUT_PATH, "spansh_route.txt"), 'w') as f:
             for jump in paths:
                 f.write(f"{jump[2]}\n")
             f.close()
@@ -303,9 +304,10 @@ def exportSpansh(paths:list) -> bool:
 
 def exportTXT(paths:list) -> bool:
     try:
-        with open("route.txt", 'w') as f:
+        with open(os.path.join(OUTPUT_PATH, "route.txt"), 'w') as f:
             for jump in paths:
                 f.write(f"{jump[1]} -> {jump[2]} ({round(jump[0])} lys)\n")
+            f.write(f"Total distance: {round(calcFullDistance([paths])[0], 2)} lys")
             f.close()
 
         return True
@@ -342,6 +344,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     global isLoop, isTxt, isJson, isSpansh, isGreedy, isDebug, isCrash
     isLoop, isTxt, isJson, isSpansh, isGreedy, isFirst, isDebug, isCrash = args.loop, args.txt, args.json, args.spansh, args.greedy, args.first, args.debug, args.crash
+    load_dotenv()
+    global OUTPUT_PATH
+    OUTPUT_PATH = os.getenv('OUTPUT_PATH', '')
     systems = main()
     try:
         if(isCrash >= 0):
