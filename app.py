@@ -7,6 +7,7 @@ from dotenv import load_dotenv, set_key
 
 
 class Window(Frame):
+    time = 0
     def __init__(self, master=None, anch=LEFT):
         Frame.__init__(self, master, width=200, height=200)
         self.master = master
@@ -22,9 +23,20 @@ class Window(Frame):
 #
         #self.text.config(yscrollcommand=self.scrollbar.set)
 
-    def refresh(self):
+    def refresh(self, i):
         self.master.update()
-        self.master.after(1000,self.refresh)
+        i += 1
+        if('Done' in loading_label['text']):
+            self.time = 0
+            pass
+        elif('/ Loading' in loading_label['text']):
+            loading_label['text'] = f'\\ Loading {i}s'
+            self.time = i
+            self.master.after(1000,self.refresh, i)
+        else:
+            loading_label['text'] = f'/ Loading {i}s'
+            self.time = i
+            self.master.after(1000,self.refresh, i)
 
     def open_file_function(self):
 
@@ -41,7 +53,8 @@ class Window(Frame):
             file.close()
 
     def split_tasks(self):
-        self.refresh()
+        loading_label['text'] = ''
+        self.refresh(0)
         threading.Thread(target=self.run_router).start()
 
     def run_router(self) -> None:
@@ -54,13 +67,14 @@ class Window(Frame):
                 self.text.insert(END, i)
             file.close()
         self.text.config(state=DISABLED)
+        loading_label['text'] = f"Done in {self.time}s ! "
 
         
 class Buttons(Frame):
     def __init__(self, master=None, anch=LEFT):
         Frame.__init__(self, master, width=200, height=200)
         self.master = master
-        global save_location
+        global save_location, loading_label
         self.pack(fill=X, expand=True)
         isLoop, isSpansh, isJson, isGreedy  = IntVar(), IntVar(), IntVar(), IntVar()
         button_loop = Checkbutton(self, text='Loop',variable=isLoop, onvalue=1, offvalue=0, command=lambda: self.set_command(isLoop, button_loop))
@@ -69,6 +83,8 @@ class Buttons(Frame):
         button_greedy = Checkbutton(self, text='Use greedy algorithm',variable=isGreedy, onvalue=1, offvalue=0, command=lambda: self.set_command(isGreedy, button_greedy))
         button_save = Button(self, text='Save output', command=self.select_save_path)
         save_location = Label(self, text=OUTPUT_PATH)
+        loading_label = Label(self, text='')
+        loading_label.pack(side=BOTTOM, pady=10)
         save_location.pack(side=RIGHT, padx=20)
         button_save.pack(side=RIGHT, padx=20)
         button_loop.pack(side=LEFT)
