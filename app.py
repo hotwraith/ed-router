@@ -1,4 +1,5 @@
 import os
+import threading
 import subprocess
 from tkinter import *
 from tkinter import filedialog
@@ -21,6 +22,9 @@ class Window(Frame):
 #
         #self.text.config(yscrollcommand=self.scrollbar.set)
 
+    def refresh(self):
+        self.master.update()
+        self.master.after(1000,self.refresh)
 
     def open_file_function(self):
 
@@ -36,6 +40,10 @@ class Window(Frame):
             file.write(text_content)
             file.close()
 
+    def split_tasks(self):
+        self.refresh()
+        threading.Thread(target=self.run_router).start()
+
     def run_router(self) -> None:
         subprocess.run(command)
         self.text.config(state=NORMAL)
@@ -46,6 +54,7 @@ class Window(Frame):
                 self.text.insert(END, i)
             file.close()
         self.text.config(state=DISABLED)
+
         
 class Buttons(Frame):
     def __init__(self, master=None, anch=LEFT):
@@ -113,7 +122,7 @@ def make_menus(l_frame, r_frame):
 
         r_frame.router = Menu(file_menu)
         #file_menu.add_cascade(label="Router", menu=r_frame.router)
-        file_menu.add_command(label='Run router', command=lambda:[l_frame.save_file_function(), r_frame.run_router()])
+        file_menu.add_command(label='Run router', command=lambda:[l_frame.save_file_function(), r_frame.split_tasks()])
         #r_frame.router.add_command(label="Run",      command=r_frame.run_router)
         #r_frame.router.add_separator()
         #r_frame.router.add_command(label="Exit")
