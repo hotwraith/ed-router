@@ -1,4 +1,5 @@
 import os
+import argparse
 import threading
 import subprocess
 from tkinter import *
@@ -154,6 +155,10 @@ def redefine_save(path:str):
     else:
         return path
 
+parser = argparse.ArgumentParser(description="")
+parser.add_argument("--python", "-py", required=False, default=False,  action='store_true', help="This argument makes app running in python")
+args = parser.parse_args()
+isPy = args.python
 global OUTPUT_PATH
 load_dotenv()
 OUTPUT_PATH = os.getenv('OUTPUT_PATH', '')
@@ -161,7 +166,10 @@ OUTPUT_PATH = redefine_save(OUTPUT_PATH)
 top = Tk()
 top.geometry("1000x500")
 top.title("Elite: Dangerous Router")
-command = ["router.exe"]
+if(isPy):
+    command = ["py", "router.py"]
+else:
+    command = ["router.exe"]
 main_frame = Frame(top)
 main_frame.pack(fill=BOTH, expand=1, side=TOP)
 l_frame = Window(main_frame)
