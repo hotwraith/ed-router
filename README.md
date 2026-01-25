@@ -21,7 +21,7 @@ Requires [Python 3.x](https://www.python.org/downloads/) and the [Requests libra
 
 **OR**
 
-- Download the `python_standalone.zip` archive
+- Download the `python_standalone_X.X.X.zip` archive
 - Extract it (always keep the `systems.txt` at the same level than `router.py`)
 
 ### Python to .exe build
@@ -45,6 +45,10 @@ Requires [Pyinstaller](https://pyinstaller.org/en/stable/) as well as the aforme
 ## Usage
 
 ### Python
+
+- You can run `python app.py -py` and use the app as described in the [.exe standalone](#exe)
+
+**OR**
 
 - Edit `systems.txt` to add the systems you want in your route
     - The first system will be your departure, be careful of which one you put first
@@ -71,6 +75,23 @@ Requires [Pyinstaller](https://pyinstaller.org/en/stable/) as well as the aforme
     - Restart the app
     - If none of these things work you can [create an issue](https://github.com/hotwraith/ed-router/issues/new), where you describe your issue more in detail
 
+## Files
+
+- `.env`
+    - Contains the variables, including the output path for `route.txt`
+- `app.py/exe`
+    - User interface, used to edit `systems.txt` and view `route.txt`, as well as edit the output path
+- `customExceptions.py/exe`
+    - Custom exceptions for the script
+- `customExceptionsHandler.py/exe`
+    - Handles the exceptions that may arise when running the script, and displays them in the right window of the app (by writing them in `route.txt`)
+- `router.py/exe`
+    - The router itself, polls EDSM's API, computes paths, and picks the best one
+- `systems.txt`
+    - Input file, in this you put the systems you want on your route, the first system of the file will be considered the starting point
+- `route.txt`
+    - Output file
+
 ## Notes
 
 - By default the script will try to store temporary and persistent data in `~\AppData\Local\ed-router\`.
@@ -80,3 +101,4 @@ Requires [Pyinstaller](https://pyinstaller.org/en/stable/) as well as the aforme
         - `crash.txt`: Contains crash reports and time of crashes of when the router failed, using the `-c` option while running the router allows to nicely print those errors in your console to understand the issue better (more often than never it'll be a spelling error in a name you put in `systems.txt`)
 
 - By default the app (`.exe`) version will try to store outputs in `~\Downloads\`
+    - More precisely, the `.env` file contains the variable `OUTPUT_PATH` which describes where the router will try to write the results.
