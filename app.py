@@ -15,13 +15,12 @@ class Window(Frame):
 
         self.pack(fill=BOTH, expand=True)
 
-        self.text = Text(self, height=200, width=200)
+        self.text = Text(self, height=200, width=200, wrap=WORD)
         self.text.pack(side=LEFT, fill=BOTH, expand=True)
 
         #self.scrollbar = Scrollbar(top, orient="vertical")
         #self.scrollbar.config(command=self.text.yview)
         #self.scrollbar.pack(side=RIGHT, fill=Y, expand=True)
-#
         #self.text.config(yscrollcommand=self.scrollbar.set)
 
     def refresh(self, i):
