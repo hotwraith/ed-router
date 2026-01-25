@@ -3,15 +3,15 @@ import copy
 import json
 import math
 import time
-import datetime
-import requests
 import argparse
+import requests
 import traceback
+import customExceptions
+from customExceptionsHandler import Handler
 from itertools import permutations
 from dotenv import load_dotenv
 
-
-def main() -> list[str]:
+def init() -> None:
     try:
         LOCALAPPDATA = os.environ["LOCALAPPDATA"]
     except Exception:
@@ -31,6 +31,8 @@ def main() -> list[str]:
         f = open(os.path.join(fullpath,'persistent','all_sys.json'), 'w')
         json.dump({}, f)
         f.close()
+
+def main() -> list[str]:
     with open('systems.txt', 'r') as f:
         systems = f.readlines()
         f.close()
@@ -83,6 +85,7 @@ def fetchEDSM(systems:list[str]) -> dict:
     start = time.time()
     existing_dict = json.load(open(os.path.join(fullpath,'persistent','all_sys.json'), 'r'))
     existing_sys = []
+    errors = []
     for el in list(existing_dict.keys()):
         existing_sys.append(el)
     sys_dict = {}
@@ -93,12 +96,15 @@ def fetchEDSM(systems:list[str]) -> dict:
             thisSys = requests.get('https://www.edsm.net/api-v1/system', params={"systemName":clear, "showCoordinates":1}).json()
             if(type(thisSys) is list):
                 print(f"\033[31mError when trying to fetch system \"{clear}\" from EDSM API, check spelling in systems.txt\033[0m")
+                errors.append(clear)
             else:
                 sys_dict.update({thisSys["name"]:thisSys})
                 existing_dict.update({thisSys["name"]:thisSys})
         else:
             sys_dict.update({el:existing_dict[clear]})
         i+=1
+    if(len(errors) > 0):
+        raise customExceptions.MissingSystem(errors, OUTPUT_PATH)
     with open(os.path.join(fullpath,'persistent','all_sys.json'), 'w') as f:
         json.dump(existing_dict, f)
         f.close()
@@ -347,8 +353,22 @@ if __name__ == '__main__':
     load_dotenv()
     global OUTPUT_PATH
     OUTPUT_PATH = os.getenv('OUTPUT_PATH', '')
-    systems = main()
+    init()
+    state = {
+        'isLoop':isLoop,
+        'isTxt':isTxt,
+        'isJson':isJson,
+        'isSpansh':isSpansh,
+        'isGreedy':isGreedy,
+        'isFirst':isFirst,
+        'isDebug':isDebug,
+        'isCrash':isCrash,
+        'OUTPUT_PATH':OUTPUT_PATH,
+        'FULL_PATH':fullpath
+        }
+    handler = Handler(state)
     try:
+        systems = main()
         if(isCrash >= 0):
             with open(os.path.join(fullpath,'persistent','crash.txt')) as f:
                 lines = f.readlines()
@@ -437,9 +457,4 @@ if __name__ == '__main__':
     except Exception as e:
         if(isDebug):
             print(traceback.format_exc())
-        router = ""
-        router = "greedy router" if isGreedy else "default router"
-        print(f"Unknown error while using {router}: {e}")
-        write_mode = "a" if "crash.txt" in os.listdir() else "w"
-        with open(os.path.join(fullpath,'persistent','crash.txt'), write_mode) as f:
-            f.write(json.dumps({str(datetime.datetime.now()):traceback.format_exc().split("\n")})+"\n")
+        handler.handle(e)

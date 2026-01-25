@@ -1,4 +1,6 @@
 import os
+import argparse
+import threading
 import subprocess
 from tkinter import *
 from tkinter import filedialog
@@ -6,21 +8,35 @@ from dotenv import load_dotenv, set_key
 
 
 class Window(Frame):
+    time = 0
     def __init__(self, master=None, anch=LEFT):
         Frame.__init__(self, master, width=200, height=200)
         self.master = master
 
         self.pack(fill=BOTH, expand=True)
 
-        self.text = Text(self, height=200, width=200)
+        self.text = Text(self, height=200, width=200, wrap=WORD)
         self.text.pack(side=LEFT, fill=BOTH, expand=True)
 
         #self.scrollbar = Scrollbar(top, orient="vertical")
         #self.scrollbar.config(command=self.text.yview)
         #self.scrollbar.pack(side=RIGHT, fill=Y, expand=True)
-#
         #self.text.config(yscrollcommand=self.scrollbar.set)
 
+    def refresh(self, i):
+        self.master.update()
+        i += 1
+        if('Done' in loading_label['text']):
+            self.time = 0
+            pass
+        elif('/ Loading' in loading_label['text']):
+            loading_label['text'] = f'\\ Loading {i}s'
+            self.time = i
+            self.master.after(1000,self.refresh, i)
+        else:
+            loading_label['text'] = f'/ Loading {i}s'
+            self.time = i
+            self.master.after(1000,self.refresh, i)
 
     def open_file_function(self):
 
@@ -36,6 +52,11 @@ class Window(Frame):
             file.write(text_content)
             file.close()
 
+    def split_tasks(self):
+        loading_label['text'] = ''
+        self.refresh(0)
+        threading.Thread(target=self.run_router).start()
+
     def run_router(self) -> None:
         subprocess.run(command)
         self.text.config(state=NORMAL)
@@ -46,12 +67,14 @@ class Window(Frame):
                 self.text.insert(END, i)
             file.close()
         self.text.config(state=DISABLED)
+        loading_label['text'] = f"Done in {self.time}s ! "
+
         
 class Buttons(Frame):
     def __init__(self, master=None, anch=LEFT):
         Frame.__init__(self, master, width=200, height=200)
         self.master = master
-        global save_location
+        global save_location, loading_label
         self.pack(fill=X, expand=True)
         isLoop, isSpansh, isJson, isGreedy  = IntVar(), IntVar(), IntVar(), IntVar()
         button_loop = Checkbutton(self, text='Loop',variable=isLoop, onvalue=1, offvalue=0, command=lambda: self.set_command(isLoop, button_loop))
@@ -60,6 +83,8 @@ class Buttons(Frame):
         button_greedy = Checkbutton(self, text='Use greedy algorithm',variable=isGreedy, onvalue=1, offvalue=0, command=lambda: self.set_command(isGreedy, button_greedy))
         button_save = Button(self, text='Save output', command=self.select_save_path)
         save_location = Label(self, text=OUTPUT_PATH)
+        loading_label = Label(self, text='')
+        loading_label.pack(side=BOTTOM, pady=10)
         save_location.pack(side=RIGHT, padx=20)
         button_save.pack(side=RIGHT, padx=20)
         button_loop.pack(side=LEFT)
@@ -113,7 +138,7 @@ def make_menus(l_frame, r_frame):
 
         r_frame.router = Menu(file_menu)
         #file_menu.add_cascade(label="Router", menu=r_frame.router)
-        file_menu.add_command(label='Run router', command=lambda:[l_frame.save_file_function(), r_frame.run_router()])
+        file_menu.add_command(label='Run router', command=lambda:[l_frame.save_file_function(), r_frame.split_tasks()])
         #r_frame.router.add_command(label="Run",      command=r_frame.run_router)
         #r_frame.router.add_separator()
         #r_frame.router.add_command(label="Exit")
@@ -129,6 +154,10 @@ def redefine_save(path:str):
     else:
         return path
 
+parser = argparse.ArgumentParser(description="")
+parser.add_argument("--python", "-py", required=False, default=False,  action='store_true', help="This argument makes app running in python")
+args = parser.parse_args()
+isPy = args.python
 global OUTPUT_PATH
 load_dotenv()
 OUTPUT_PATH = os.getenv('OUTPUT_PATH', '')
@@ -136,7 +165,10 @@ OUTPUT_PATH = redefine_save(OUTPUT_PATH)
 top = Tk()
 top.geometry("1000x500")
 top.title("Elite: Dangerous Router")
-command = ["router.exe"]
+if(isPy):
+    command = ["py", "router.py"]
+else:
+    command = ["router.exe"]
 main_frame = Frame(top)
 main_frame.pack(fill=BOTH, expand=1, side=TOP)
 l_frame = Window(main_frame)
